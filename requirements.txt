@@ -1,4 +1,4 @@
-# python-dotenv==1.2.2
+python-dotenv #==1.2.2
 # dotenv==0.9.9
 
 # pandas==3.0.1
