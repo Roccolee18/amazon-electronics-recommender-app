@@ -2,6 +2,8 @@
 """
 Usage:
     python pipeline.py # to convert raw downloaded jsonl.gz files to parquet, and create a sample subset for quicker iteration
+References: 
+    ilyamusabirov/525eda_duckdb.md: https://gist.github.com/ilyamusabirov/9491e5ce6ae2fc63d6222609cebd0588
 """
 
 import argparse
@@ -30,10 +32,21 @@ def main():
 
     con = duckdb.connect()
 
-# 1) convert files to parq
+# 1) convert files to parquet (x2 --> meta + reviews)
+
+    con.execute(f"""
+        COPY (SELECT * FROM read_json_auto('{args.reviews}') LIMIT {args.limit})
+        TO '{reviews_raw}' (FORMAT PARQUET, COMPRESSION ZSTD)
+    """)
+
+    # stream meta from jsonl.gz → local parquet
+    con.execute(f"""
+        COPY (SELECT * FROM read_json_auto('{args.meta}') LIMIT {args.limit})
+        TO '{meta_raw}' (FORMAT PARQUET, COMPRESSION ZSTD)
+    """)
+
 # 2) merge files on key
 # 3) create subset 
-
 
 if __name__ == "__main__":
     main()
