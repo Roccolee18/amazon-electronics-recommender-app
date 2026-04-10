@@ -3,7 +3,7 @@
 
 ```
 
-python convert_parquet.py \
+python src/convert_parquet.py \
   --reviews data/raw/Electronics.jsonl.gz \
   --meta data/raw/meta_Electronics.jsonl.gz \
   --out-dir data/processed \

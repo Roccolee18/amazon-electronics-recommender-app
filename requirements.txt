@@ -1,4 +1,7 @@
 python-dotenv #==1.2.2
+faiss-cpu
+sentence-transformers
+duckdb
 # dotenv==0.9.9
 
 # pandas==3.0.1
@@ -10,5 +13,3 @@ python-dotenv #==1.2.2
 
 # pytest>=8.0.0
 # pytest-playwright>=0.5.0
-faiss-cpu
-sentence-transformers

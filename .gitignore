@@ -1,3 +1,6 @@
 # Ignore everything in raw/ (except .gitkeep to keep directory)
 data/raw/*
-!data/raw/.gitkeep
+!data/raw/.gitkeep # to keep directory in git
+
+data/processed/*
+!data/processed/sample.parquet # to have an available sample for minimal-version testing
