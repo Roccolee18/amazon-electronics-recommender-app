@@ -9,7 +9,11 @@ References:
 import argparse
 from pathlib import Path
 import duckdb
+from utils import *
 
+
+default_review_cols = read_review_txt_columns()
+default_meta_cols = read_meta_txt_columns()
 
 # Used Claude in setting up script (args) for command/bash use 
 def parse_args():
@@ -25,11 +29,11 @@ def parse_args():
                    help="Unique parent_asin keys in sample after being merged, & number of rows for each main source file")
     p.add_argument("--review-cols", 
                    nargs="+", #to accept multiple columns as input by spaces and then add them as a list to args 
-                   default=["title", "helpful_vote"],
+                   default=default_review_cols,
                    help="Review columns to include (space-separated)")
     p.add_argument("--meta-cols",
                    nargs="+", #to accept multiple columns as input by spaces and then add them as a list to args 
-                   default=["main_category", "title", "features", "description", "details"],
+                   default=default_meta_cols,
                    help="Meta columns to include (space-separated)")
     return p.parse_args()
 

@@ -1,0 +1,2 @@
+title
+helpful_vote
