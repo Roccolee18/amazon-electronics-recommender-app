@@ -14,11 +14,25 @@ import duckdb
 # Used Claude in setting up script (args) for command/bash use 
 def parse_args():
     p = argparse.ArgumentParser()
-    p.add_argument("--reviews", default="../data/raw/Electronics.jsonl.gz")
-    p.add_argument("--meta", default= "../data/raw/meta_Electronics.jsonl.gz")
-    p.add_argument("--out-dir", default="../data/processed")
-    p.add_argument("--row_limit",   type=int, default=20000, help="Max rows from each source (default: 20000)")
-    p.add_argument("--subset_sample_size",  type=int, default=500,   help="Unique parent_asin keys in sample (default: 500)")
+    p.add_argument("--reviews", 
+                   default="../data/raw/Electronics.jsonl.gz")
+    p.add_argument("--meta", 
+                   default= "../data/raw/meta_Electronics.jsonl.gz")
+    p.add_argument("--out-dir", 
+                   default="../data/processed")
+    p.add_argument("--row_limit",   type=int, 
+                    default=20000, help="Max rows from each source (default: 20000)")
+    p.add_argument("--subset_sample_size",  type=int, 
+                   default=500,   
+                   help="Unique parent_asin keys in sample (default: 500)")
+    p.add_argument("--review-cols", 
+                   nargs="+", #to accept multiple columns as input by spaces and then add them as a list to args 
+                   default=["title", "helpful_vote"],
+                   help="Review columns to include (space-separated)")
+    p.add_argument("--meta-cols",
+                   nargs="+", #to accept multiple columns as input by spaces and then add them as a list to args 
+                   default=["main_category", "title", "features", "description", "details"],
+                   help="Meta columns to include (space-separated)")
     return p.parse_args()
 
 
@@ -32,21 +46,37 @@ def main():
 
     con = duckdb.connect()
 
-# 1) convert files to parquet (x2 --> meta + reviews)
+# 1) convert files to parquet (x2 --> meta + reviews) ############################################################
 
-    con.execute(f"""
-        COPY (SELECT * FROM read_json_auto('{args.reviews}') LIMIT {args.limit})
-        TO '{reviews_raw}' (FORMAT PARQUET, COMPRESSION ZSTD)
-    """)
-
-    # stream meta from jsonl.gz → local parquet
+    # Meta
     con.execute(f"""
         COPY (SELECT * FROM read_json_auto('{args.meta}') LIMIT {args.limit})
         TO '{meta_raw}' (FORMAT PARQUET, COMPRESSION ZSTD)
     """)
 
-# 2) merge files on key
-# 3) create subset 
+    # Reviews
+    con.execute(f"""
+        COPY (SELECT * FROM read_json_auto('{args.reviews}') LIMIT {args.limit})
+        TO '{reviews_raw}' (FORMAT PARQUET, COMPRESSION ZSTD)
+    """)
+
+# 2) merge files on parent_asin key ############################################################
+
+   # need to convert desired columns to one large string for SQL
+    raw_cols = ", ".join(f"raw.{col}" for col in args.review_cols)
+    meta_cols = ", ".join(f"meta.{col}" for col in args.meta_cols)
+
+    # left join from meta so every product row is preserved (even with no reviews)
+    con.execute(f"""
+        COPY (
+            SELECT meta.parent_asin, {meta_cols}, {raw_cols}
+            FROM read_parquet('{meta_raw}') as meta
+            LEFT JOIN read_parquet('{reviews_raw}') as raw USING (parent_asin)
+        )
+        TO '{merged_out}' (FORMAT PARQUET, COMPRESSION ZSTD)
+    """)
+
+# 3) create subset ############################################################
 
 if __name__ == "__main__":
     main()
