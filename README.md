@@ -14,7 +14,7 @@ Data set up process:
 
 both the reviews and meta - SPECIFICALLY THE "ELECTRONICS" ONE
 
-download data via: python `src/direct_datadownload.py`
+download data via: python `src/direct_datadownload.py` # this might take a very long time as it's bottelnecked by the server throughput. Could be faster to just manually download via website
 
 or alternatively/manually
 1. manually download the data from the website (link), both the reviews and meta - SPECIFICALLY THE "ELECTRONICS" ONE
