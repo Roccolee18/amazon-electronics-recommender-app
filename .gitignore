@@ -3,3 +3,4 @@ data/raw/*
 !data/raw/.gitkeep # to keep directory in git
 
 data/processed/*
+!data/processed/product_documents.parquet
