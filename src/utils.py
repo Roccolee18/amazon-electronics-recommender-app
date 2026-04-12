@@ -1,3 +1,12 @@
+import requests
+from tqdm import tqdm
+from pathlib import Path
+import string
+import nltk
+from nltk.corpus import stopwords
+
+nltk.download("stopwords", quiet=True)
+STOP_WORDS = set(stopwords.words("english"))
 
 ############################## For convert_parquet.py and create_documents.py script ##############################
 
@@ -17,9 +26,7 @@ def read_review_txt_columns(filepath = "notebooks/review_columns.txt"):
     
 
 ############################## For huggingface_datadownload.py script ##############################
-import requests
-from tqdm import tqdm
-from pathlib import Path
+
 
 def file_name_source_map(base_url, subset, meta, reviews):
     files = {}
@@ -63,5 +70,36 @@ def semantic_search(docs, model, index, query, k=5):
             'parent_asin': docs.iloc[idx]['parent_asin'],
             'product_title': docs.iloc[idx]['product_title'],
             'distance': dist
+        })
+    return results
+
+############################## Query using BM25 search ##############################
+
+def tokenize(document) -> list[str]:
+    """
+    Custom tokenized function for BM25.
+    Does whitespace split, makes lowercase, remove punctuation and stopwords.
+    """
+
+    document = document.lower()
+    document = document.translate(str.maketrans("", "", string.punctuation)) # removes punctuation 
+    tokens = document.split()
+    tokens = [t for t in tokens if t not in STOP_WORDS]
+    return tokens
+
+
+def bm25_search(query, bm25, doc_names, k = 5):
+    tokens = tokenize(query)
+    scores = bm25.get_scores(tokens)
+    ranked_indices = sorted(range(len(scores)), 
+                            key= lambda i: scores[i], 
+                            reverse=True) # higher score is better
+    top_k_indices  = ranked_indices[:k]
+
+    results = []
+    for i in top_k_indices:
+        results.append({
+            "product_title": doc_names[i],
+            "distance": scores[i]
         })
     return results
