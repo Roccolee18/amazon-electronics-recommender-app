@@ -52,6 +52,7 @@ def main():
 
 
     con = duckdb.connect()
+    print("[STATUS] Connected to DuckDB to start the conversion process.")
 
 #################### 1) convert files to parquet (x2 --> meta + reviews) #############################
 
@@ -63,7 +64,7 @@ def main():
                             ))
         TO '{meta_raw}' (FORMAT PARQUET, COMPRESSION ZSTD)
     """)
-    print(f"meta data exported as full-sized parquet file")
+    print(f"[DONE] Meta data exported as full-sized parquet file.")
 
     # Reviews
     con.execute(f"""
@@ -73,10 +74,11 @@ def main():
                             ))
         TO '{reviews_raw}' (FORMAT PARQUET, COMPRESSION ZSTD)
     """)
-    print(f"reviews data exported as full-sized parquet file")
+    print(f"[DONE] Reviews data exported as full-sized parquet file.")
 
 ################################ 2) merge files on parent_asin key ##########################################
 
+    print(f"[STATUS] Starting merge of both meta and reviews files. This may take a while...")
    # need to convert desired columns to one large string for SQL
     raw_cols = ", ".join(f"raw.{col}" for col in args.review_cols)
     meta_cols = ", ".join(f"meta.{col}" for col in args.meta_cols)
@@ -91,7 +93,7 @@ def main():
         TO '{merged_out}' (FORMAT PARQUET, COMPRESSION ZSTD)
     """)
     
-    print(f"merged meta and reviews data and exported")
+    print(f"[DONE] Merged both meta and reviews and exported.")
 
 ########################################## 3) create merged subset ##########################################
 
@@ -102,7 +104,7 @@ def main():
               LIMIT {args.subset_sample_size})
         TO '{meta_subset}' (FORMAT PARQUET, COMPRESSION ZSTD)
     """)
-    print(f"lean subset of the full-sized meta file exported.")
+    print(f"[DONE] Exported a subset of the full-sized meta file.")
 
     # Reviews subset
     con.execute(f"""
@@ -110,7 +112,7 @@ def main():
               LIMIT {args.subset_sample_size})
         TO '{reviews_subset}' (FORMAT PARQUET, COMPRESSION ZSTD)
     """)
-    print(f"lean subset of the full-sized reviews file exported.")
+    print(f"[DONE] Exported a subset of the full-sized review file.")
 
 # exporting rows only belonging to the first "subset_sample_size" number of unique parent_asin keys (via cmd argument)
     con.execute(f"""
@@ -126,11 +128,11 @@ def main():
         )
         TO '{merged_subset}' (FORMAT PARQUET, COMPRESSION ZSTD)
     """)
-    print(f"subset of full-sized merged (review + meta) file exported.")
-
-
+    print(f"[DONE] Exported a subset of the full-sized merged (meta + reviews) file.")
 
     con.close()
+    print(f"[STATUS] Completed all conversions and merges. Closed DuckDB connection.")
+
 
 if __name__ == "__main__":
     main()
