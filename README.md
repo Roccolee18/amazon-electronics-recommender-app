@@ -3,12 +3,29 @@
 This repo uses data of Amazon product & their reviews (specifically for the Electronics category) to compare 2 different retrievals systems: BM25 (keyword-based) and Semantic (embedding-based), to search and compare product results via user queries.
 
 ## Description of Dataset
-This project uses a data set of Amazon reviews and product metadata grouped by product category. Specifically, we chose to focus our data set on products under the Electronics category. The purpose of this project is to use multiple different retrieval systems (like BM25 and Semantic) on this product set to retrieve relevant product based on a variety of queries. 
-The data sources can be found below:
 
-Dataset Website: https://amazon-reviews-2023.github.io/
+This project uses the [Amazon Reviews 2023](https://amazon-reviews-2023.github.io/) dataset, focusing on the **Electronics** category. This can also be found in [Hugging Face Website]( https://huggingface.co/datasets/McAuley-Lab/Amazon-Reviews-202). It combines two data sources:
 
-Hugging Face: https://huggingface.co/datasets/McAuley-Lab/Amazon-Reviews-2023
+- **Reviews** (`Electronics.jsonl.gz`): dataset of individual user reviews with fields including `rating`, `text`, `asin`, `parent_asin`, `user_id`, `timestamp`, `helpful_vote`, and `verified_purchase`
+- **Metadata** (`meta_Electronics.jsonl.gz`): dataset of product-level information including `title`, `price`, `average_rating`, `main_category`, and `store`
+
+These two sources are joined on `parent_asin` to produce a merged dataset (reproducing the work flow instructions below). 
+
+### Preprocessing:
+
+Via EDA done in `milestone_exploration.ipynb`, some columns were dropped or converted in a more palatable way for document creation/pipeline requirements. More explanation can be found there. 
+
+In short: the following columns were dropped in meta `["images", "videos", "subtitle", "author", "bought_together", "rating_number", "average_rating", "price", "store"]` and only `["title", "helpful_vote", "parent_asin"]` was retained in reviews. The dropped columns either do not work well in the retrieval pipeline without serious extra steps (images/videos) or would increase the document size without meaningful additions. The second reason (lack of meaningful additions) is also the main reason why so many of the review columns were dropped - as the document size would explode - but only add noise.
+
+## Current Types of Retrieval Systems:
+
+Currently there are 2 types of retrieval systems being explored:
+1. BM25 -> Keyword TF-IDF based. Expected to preform the best when there's high exact-word matching between a query and the products.
+2. Semantic -> Embedding-based. Expected to preform the best when there's a more abstract query and the products semantic best match the overall meaning and intent of the user query.
+
+Comming soon:
+- Hybrid of BM25 and Semantic
+- RAG
 
 ## Recreating Project Workflow
 
@@ -45,7 +62,7 @@ python src/convert_parquet.py \
 
 4. Create documents from the data set using:
 ```bash
-python create_documents.py
+python src/create_documents.py
 ```
 
 5. To use BM25 search, run the `bm25.py` file with the appropriate arguments, or just call it plainly to use default arguments
