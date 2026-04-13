@@ -29,6 +29,10 @@ Comming soon:
 
 ## Recreating Project Workflow
 
+> NOTE: If files in `data/processed` are removed -> Steps 1-4 must be done first before running the milestone1_exploration (requires parquet format).
+
+> NOTE: If short on time: steps 3 & 4 (which are very time consuming) can be skipped. This works since subset versions of data sources (already converted) are already exported to the repo - and the pipeline currently just uses a subset due to time constraints.
+
 ### 1. Clone the Repository
 Clone the repo into the desired folder using this command in a new terminal window:
 ```bash
@@ -44,6 +48,7 @@ conda activate amazon-recommender # or whatever the custom env name might be
 ```
 
 ### 3. Download the Dataset
+> Note: Downloads are very large. Expect 45–60+ minutes depending on your connection. The automated method may be even slower due to server-side rate limits.
 
 **Option A — Manual download  (recommended):**
 1. Go to the [dataset website](https://amazon-reviews-2023.github.io/).
@@ -57,10 +62,9 @@ conda activate amazon-recommender # or whatever the custom env name might be
 # Via terminal in the root project directory 
 python ./src/direct_datadownload.py 
 ```
-> Note: Downloads are very large. Expect 45–60+ minutes depending on your connection. The automated method may be even slower due to server-side rate limits.
-
 ### 4. Convert to Parquet
 Run bellow code to convert from .jsonl / .json.gz to parquet:
+> This step might also take quite long due to the large files conversion and merging the two. Estimated to be ~10-15 minutes.
 
 ```bash
 python src/convert_parquet.py \
@@ -68,8 +72,6 @@ python src/convert_parquet.py \
   --meta data/raw/meta_Electronics.jsonl.gz \
   --subset_sample_size 500
 ```
-
-> This step might also take quite long due to the large files conversion and merging the two. Estimated to be ~10-15 minutes.
 
 ### 5. Create Search Documents
 This prepares the processed data as document objects used by the retrieval systems.
