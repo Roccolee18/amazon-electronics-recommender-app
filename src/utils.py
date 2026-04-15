@@ -197,3 +197,13 @@ def return_top_results(top_k):
             print("---")
 
     return results
+
+############################## RAG pipeline Functions ##############################
+
+def build_context(docs):
+        return "\n\n".join(
+            f"Product ASIN: {doc.metadata.get('parent_asin', 'N/A')}\n"
+            f"Title: {doc.metadata.get('product_title', '')}\n"
+            # f"Rating: {doc.metadata['rating']}/5]\n" # Need to add back as part of web app requirements
+            for doc in docs
+        )
