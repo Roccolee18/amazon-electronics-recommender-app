@@ -11,6 +11,11 @@ import pandas as pd
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 
+import pandas as pd
+from langchain_core.documents import Document
+from langchain_community.retrievers import BM25Retriever
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+
 nltk.download("stopwords", quiet=True)
 STOP_WORDS = set(stopwords.words("english"))
 
@@ -110,8 +115,10 @@ def bm25_search(query, bm25, doc_names, k = 5):
         })
     return results
 
-def load_documents(parquet_path: str, 
-                    text_col: str = "document"):
+
+############################## Langchain Utils Functions ##############################
+def load_documents(parquet_path = "data/processed/product_documents.parquet", 
+                    text_col= "document"):
 
     data = pd.read_parquet(parquet_path)
 
@@ -126,16 +133,12 @@ def load_documents(parquet_path: str,
     print(f"{len(documents)} documents loaded")
     return documents
 
-def split_documents(documents: list[Document],
-                    chunk_size: int = 500,
-                    chunk_overlap: int = 100) -> list[Document]:
+def split_documents(documents,
+                    chunk_size = 500,
+                    chunk_overlap = 100):
     """
-    Split documents using RecursiveCharacterTextSplitter
-    It recursively tries to split at natural boundaries (paragraphs, newlines)
+    Split documents using RecursiveCharacterTextSplitter — recursively tries to split at natural boundaries (paragraphs, newlines)
     rather than cutting arbitrarily.
-
-    chunk_size / chunk_overlap are a tradeoff:
-      Too small → loses context; Too large → retrieval less precise
     """
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=chunk_size,
@@ -162,3 +165,11 @@ def build_vectorstore(split_docs: list[Document],
     vectorstore = FAISS.from_documents(split_docs, embeddings)
     print("FAISS vector store built — knowledge base is now searchable by meaning")
     return vectorstore
+
+
+def langc_bm25_retriever(split_docs, 
+                         k: int = 5):
+    bm25_retriever = BM25Retriever.from_documents(split_docs)
+    bm25_retriever.k = k
+    return bm25_retriever
+
