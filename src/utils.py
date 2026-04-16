@@ -191,7 +191,7 @@ def return_top_results(top_k):
         "score": float(score)
     })
     for r in results:
-            print(f"Product ID: {r["parent_asin"]}")
+            print(f"Product ID: {r['parent_asin']}")
             print(r["product_title"])
             print(f"Score: {r['score']:.4f}")
             print("---")
