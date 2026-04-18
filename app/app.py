@@ -15,7 +15,10 @@ model = SentenceTransformer("all-MiniLM-L6-v2")
 index = faiss.read_index("./data/processed/semantic_search_index.faiss")
 
 with open("./data/processed/bm25_index.pkl", "rb") as f:
-    bm25 = pickle.load(f)
+    bm25_data = pickle.load(f)
+
+bm25 = bm25_data["bm25"]
+doc_names = bm25_data["doc_names"]
 
 # ── Result card (Search Only) ──────────────────────────────────────────────────
 
@@ -87,17 +90,18 @@ app_ui = ui.page_fluid(
         .mode-tab:not(:last-child) { border-right: 1.5px solid var(--border); }
 
         /* ── Sub-mode radio pills (Search Only) ── */
+        .shiny-input-radiogroup > label { display: none; }
         .shiny-input-radiogroup .shiny-options-group { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
         .shiny-input-radiogroup input[type=radio] { display: none; }
         .shiny-input-radiogroup label.radio {
-            display: inline-flex !important;
-            align-items: center;
-            padding: 8px 18px;
-            border: 1.5px solid var(--border);
-            border-radius: 999px;
-            cursor: pointer;
-            font-family: 'Syne', sans-serif; font-size: 0.85rem; font-weight: 600;
-            color: var(--muted); transition: all 0.18s; background: var(--surface);
+        display: inline-flex !important;
+        align-items: center;
+        padding: 8px 18px;
+        border: 1.5px solid var(--border);
+        border-radius: 999px;
+        cursor: pointer;
+        font-family: 'Syne', sans-serif; font-size: 0.85rem; font-weight: 600;
+        color: var(--muted); transition: all 0.18s; background: var(--surface);
         }
         .shiny-input-radiogroup label.radio:has(input:checked) { background: var(--accent); border-color: var(--accent); color: #0e0f13; }
 
@@ -179,11 +183,11 @@ app_ui = ui.page_fluid(
 
         # ── PANEL: Search Only ────────────────────────────────────────────────
         ui.div(
-            ui.input_radio_buttons(
+            ui.input_select(
                 "search_mode", None,
                 choices={"semantic": "Semantic", "bm25": "BM25"},
                 selected="semantic",
-                inline=True
+                width="200px"
             ),
             ui.div(
                 ui.input_text("search_query", None,

@@ -112,7 +112,7 @@ def tokenize(document) -> list[str]:
     return tokens
 
 
-def bm25_search(query, bm25, docs, k = 5):
+def bm25_search(docs, bm25, query, k = 5):
     tokens = tokenize(query)
     scores = bm25.get_scores(tokens)
     ranked_indices = sorted(range(len(scores)),
