@@ -209,6 +209,7 @@ app_ui = ui.page_fluid(
                 ui.input_action_button("rag_btn", "Ask", class_="search-btn"),
                 class_="search-wrap"
             ),
+            ui.div(ui.output_ui("rag_loading_ui")),
             ui.div(ui.output_ui("rag_results")),
             id="panel-rag", class_="panel"
         ),
@@ -221,7 +222,7 @@ app_ui = ui.page_fluid(
 # ── Server ─────────────────────────────────────────────────────────────────────
 
 def server(input, output, session):
-
+    
     @output
     @render.ui
     @reactive.event(input.search_btn)
@@ -259,17 +260,45 @@ def server(input, output, session):
     #     ui.notification_remove("rag_notif")
         
     #     return ui.p(answer)
-    
-    @output
-    @render.ui
+    rag_answer = reactive.Value(None)
+    rag_loading = reactive.Value(False)
+
+    @reactive.effect
     @reactive.event(input.rag_btn)
-    def rag_results():
+    def trigger_rag():
         query = input.rag_query().strip()
         if not query:
-            return ui.p("Enter a question.")
-        
-        answer = run_hybrid_chain(query)
-        return ui.p(answer)
+            return
+        rag_loading.set(True)
+        rag_answer.set(None)
+        try:
+            rag_loading.set(True)
+            answer = run_hybrid_chain(query)
+            rag_answer.set(answer)
+        finally:
+            rag_loading.set(False)
+
+    @output
+    @render.ui
+    def rag_loading_ui():
+        if rag_loading():
+            return ui.div(
+                ui.div("⏳", class_="icon"),
+                ui.p("Running RAG pipeline... this may take a moment."),
+                class_="empty-state"
+            )
+        return ui.span()
+
+    @output
+    @render.ui
+    def rag_results():
+        answer = rag_answer()
+        if answer is None:
+            return ui.span()
+        return ui.div(
+            ui.p("Answer", class_="rag-answer-label"),
+            ui.div(answer, class_="rag-answer"),
+        )
 
     # @output
     # @render.ui

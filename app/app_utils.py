@@ -1,3 +1,4 @@
+import faiss
 import requests
 from tqdm import tqdm
 from pathlib import Path
@@ -5,7 +6,6 @@ import string
 import nltk
 from nltk.corpus import stopwords
 from langchain_core.documents import Document
-import faiss
 from langchain_community.vectorstores import FAISS
 import pandas as pd
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -174,6 +174,11 @@ def build_hybrid_retriever():
     return hybrid_retriever
 
 def run_hybrid_chain(query):
+    system_prompt = """
+                            You are a helpful Amazon shopping assistant.
+                            Answer the question using ONLY the following context (which contains real product reviews + metadata).
+                            Always cite the product ASIN and return a product title when possible. If the answer isn't in the context, say so.
+                            """
     hybrid_retriever = build_hybrid_retriever()
 
     docs = hybrid_retriever.invoke(query)
