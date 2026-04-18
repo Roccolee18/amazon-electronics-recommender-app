@@ -77,9 +77,11 @@ def semantic_search(docs, model, index, query, k=5):
     
     results = []
     for dist, idx in zip(distances[0], indices[0]):
+        row = docs.iloc[idx]
         results.append({
-            'parent_asin': docs.iloc[idx]['parent_asin'],
-            'product_title': docs.iloc[idx]['product_title'],
+            'parent_asin': row['parent_asin'],
+            'product_title': row['product_title'],
+            'average_rating': row['average_rating'],
             'distance': dist
         })
     return results
@@ -99,14 +101,22 @@ def tokenize(document) -> list[str]:
     return tokens
 
 
-def bm25_search(query, bm25, doc_names, k = 5):
+def bm25_search(query, bm25, docs, k = 5):
     tokens = tokenize(query)
     scores = bm25.get_scores(tokens)
-    ranked_indices = sorted(range(len(scores)), 
-                            key= lambda i: scores[i], 
-                            reverse=True) # higher score is better
-    top_k_indices  = ranked_indices[:k]
-    return [{"product_title": doc_names[i], "distance": scores[i]} for i in top_k_indices]
+    ranked_indices = sorted(range(len(scores)),
+                             key=lambda i: scores[i], 
+                             reverse=True)
+    top_k = ranked_indices[:k]
+    return [
+        {
+            'parent_asin':    docs.iloc[i]['parent_asin'],
+            'product_title':  docs.iloc[i]['product_title'],
+            'average_rating': docs.iloc[i].get('average_rating'),   # ← added
+            'distance':       float(scores[i]),
+        }
+        for i in top_k
+    ]
 
 
 
