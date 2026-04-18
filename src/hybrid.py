@@ -31,6 +31,7 @@ def build_context(docs):
     return "\n\n".join(
         f"Product ASIN: {doc.metadata.get('parent_asin', 'N/A')}\n"
         f"Title: {doc.metadata.get('product_title', '')}\n"
+        f"Average Rating: {doc.metadata.get('average_rating', '')}\n"
         for doc in docs
     )
 
@@ -50,7 +51,7 @@ def build_hybrid_retriever(faiss_folder = "data/processed/langchain_semantic_ind
     documents = [
         Document(
             page_content=row["document"],
-            metadata={"product_title": row["product_title"], "parent_asin": row["parent_asin"]}
+            metadata={"product_title": row["product_title"], "parent_asin": row["parent_asin"], "average_rating": row["average_rating"]}
         )
         for _, row in docs.iterrows()
     ]
@@ -73,8 +74,7 @@ def run_hybrid_chain(query = "what is a good gaming mouse to buy if I am left ha
                             Answer the question using ONLY the following context (which contains real product reviews + metadata).
                             Always cite the product ASIN when possible. If the answer isn't in the context, say so.
                             """,
-            hybrid_retriever = build_hybrid_retriever(),
-            queries_path = None ):
+            hybrid_retriever = build_hybrid_retriever()):
 
     docs = hybrid_retriever.invoke(query)
     context = build_context(docs)
@@ -99,34 +99,37 @@ def run_hybrid_chain(query = "what is a good gaming mouse to buy if I am left ha
             | StrOutputParser()
         )
     
-    if queries_path == None:
-        response = hybrid_rag_chain.invoke(query)
-        response_cut = response.split("Assistant:", 1)[-1].strip()
+    
+    response = hybrid_rag_chain.invoke(query)
+    response_cut = response.split("Assistant:", 1)[-1].strip()
 
-        print(response)
-        print(response_cut)
-
-    else:
-        test_queries = pd.read_csv(queries_path)
-        results = []
-        for q in test_queries['queries']:
-            retrieved_docs = hybrid_retriever.invoke(q)
-            for doc in retrieved_docs:
-                results.append({
-                    'query': q,
-                    'product_title': doc.metadata.get('product_title', 'N/A')
-                })
-        results_df = pd.DataFrame(results)
-        results_df.to_csv("results/m2_query_results.csv")
-        print(results_df)
-        return results_df
+    return (response, response_cut)
 
 
-run_hybrid_chain(query = "what is a good gaming mouse to buy if I am left handed?",
-            system_prompt = """
-                            You are a helpful Amazon shopping assistant.
-                            Answer the question using ONLY the following context (which contains real product reviews + metadata).
-                            Always cite the product ASIN when possible. If the answer isn't in the context, say so.
-                            """,
-            hybrid_retriever = build_hybrid_retriever(),
-            queries_path = "./data/processed/test_queries.csv")
+def main():
+
+    hybrid_retriever = build_hybrid_retriever()
+
+    test_queries = pd.read_csv("results/queries.csv")
+    results = []
+
+    for q in test_queries['queries']:
+        response, response_cut = run_hybrid_chain(query = q,
+                                        system_prompt = """
+                                                        You are a helpful Amazon shopping assistant.
+                                                        Answer the question using ONLY the following context (which contains real product reviews + metadata). 
+                                                        Include the product's average rating as part of your reasoning for selecting a certain product, the higher the rating the better the product.
+                                                        Always cite the product ASIN when possible. If the answer isn't in the context, say so.
+                                                        """,
+                                        hybrid_retriever = hybrid_retriever)
+        results.append({
+            'query': q,
+            'response': response_cut
+        })
+    results_df = pd.DataFrame(results)
+    results_df.to_csv("results/m2_query_results.csv")
+    print(results_df)
+    return results_df
+
+if __name__ == "__main__":
+    main()
