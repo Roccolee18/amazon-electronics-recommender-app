@@ -1,10 +1,16 @@
+import faiss
+import os
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+
 from shiny import App, ui, reactive, render
 import numpy as np
-import faiss
 from sentence_transformers import SentenceTransformer
 import pyarrow.parquet as pq
 from app_utils import *
 import pickle
+from transformers import pipeline
+from langchain_huggingface import HuggingFacePipeline
 
 
 # Load data & models
@@ -19,6 +25,16 @@ with open("./data/processed/bm25_index.pkl", "rb") as f:
 
 bm25 = bm25_data["bm25"]
 doc_names = bm25_data["doc_names"]
+
+generator = pipeline(
+                "text-generation",
+                model="Qwen/Qwen2.5-1.5B",
+                max_new_tokens=128,
+                do_sample=True,
+            )
+llm = HuggingFacePipeline(pipeline=generator)
+print("[DONE] BUILDING GENERATOR")
+hybrid_retriever = build_hybrid_retriever()
 
 # ── Result card (Search Only) ──────────────────────────────────────────────────
 
@@ -273,7 +289,7 @@ def server(input, output, session):
         rag_answer.set(None)
         try:
             rag_loading.set(True)
-            answer = run_hybrid_chain(query)
+            answer = run_hybrid_chain(query, hybrid_retriever, llm)
             rag_answer.set(answer)
         finally:
             rag_loading.set(False)

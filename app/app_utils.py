@@ -150,7 +150,7 @@ def build_hybrid_retriever():
             "data/processed/langchain_semantic_index", 
             embeddings, allow_dangerous_deserialization=True
         )
-    
+    print("[DONE] BUILDING VECTORSTORE")
     docs = pd.read_parquet("data/processed/product_documents.parquet")
     documents = [
         Document(
@@ -161,7 +161,7 @@ def build_hybrid_retriever():
         )
         for _, row in docs.iterrows()
     ]
-
+    print("[DONE] BUILDING DOCUMENTS")
     bm25_retriever = BM25Retriever.from_documents(documents)
     bm25_retriever.k = 5
 
@@ -171,26 +171,19 @@ def build_hybrid_retriever():
         retrievers=[bm25_retriever, semantic_retriever],
         weights=[0.4, 0.6]  # Example: asigning 40% importance to BM25, 60% to Semantic Search
     )
+    print("[DONE] BUILDING HYBRID RETRIEVER")
     return hybrid_retriever
 
-def run_hybrid_chain(query):
+def run_hybrid_chain(query, hybrid_retriever, llm):
     system_prompt = """
                             You are a helpful Amazon shopping assistant.
                             Answer the question using ONLY the following context (which contains real product reviews + metadata).
                             Always cite the product ASIN and return a product title when possible. If the answer isn't in the context, say so.
                             """
-    hybrid_retriever = build_hybrid_retriever()
 
     docs = hybrid_retriever.invoke(query)
     context = build_context(docs)
 
-    generator = pipeline(
-                    "text-generation",
-                    model="Qwen/Qwen2.5-1.5B",
-                    max_new_tokens=128,
-                    do_sample=True,
-                )
-    llm = HuggingFacePipeline(pipeline=generator)
     text_prompt = build_prompt(system_prompt, query, context)
     full_prompt = ChatPromptTemplate.from_template(text_prompt)
 
@@ -203,7 +196,7 @@ def run_hybrid_chain(query):
             | llm
             | StrOutputParser()
         )
-    
+    print("[DONE] BUILDING HYBRID RAG CHAIN")
     response = hybrid_rag_chain.invoke(query)
     response_cut = response.split("Assistant:", 1)[-1].strip()
 
