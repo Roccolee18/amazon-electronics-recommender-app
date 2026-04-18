@@ -12,7 +12,9 @@ from transformers import pipeline
 from langchain_huggingface import HuggingFacePipeline, ChatHuggingFace
 from langchain_core.runnables import RunnablePassthrough, RunnableLambda
 from langchain_community.retrievers import BM25Retriever
-from langchain.retrievers.ensemble import EnsembleRetriever
+from langchain_core.documents import Document
+from langchain_community.retrievers import BM25Retriever
+from langchain_classic.retrievers import EnsembleRetriever
 
 def build_prompt(SYSTEM_PROMPT, query, context):
     return f"""{SYSTEM_PROMPT}
