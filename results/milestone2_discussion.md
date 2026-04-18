@@ -7,72 +7,52 @@ For building RAG functionality in our project, we decided to use the Qwen/Qwen2.
 | # | Query | Response |
 |---|-------|---------------|
 | 1 | wireless bluetooth headphones | "Based on the average ratings provided, wireless Bluetooth headphones with a rating of 3.8 is a suitable option for your needs. The higher average rating suggests that these headphones have received positive feedback from users, indicating that they meet the expectations set by consumers. However, it's always important to consider other factors such as comfort, battery life, and compatibility before making a final decision." |
-| 2 | 1080p gaming monitor | ASUS TUF Gaming 23.8" 1080P Monitor (VG249Q1R) - Full HD, IPS, 165Hz, 1ms |
-| 3 | 13 inch chromebook | "To answer the question for a 13-inch Chromebook, I'll examine the average ratings of the products in the dataset provided. Here are the relevant details: This product has an average rating of 3.7, which is the highest among the options. It's a Meisohua Canvas Backpack with a wide range of features such as a USB charging port, making it suitable for college students and those who need extra space and convenience for their laptops. |
-| 4 | noise cancelling headphones | "The Saramonic SR-BH600 Over-Ear Headphones, Active Noise Cancelling Bluetooth Headphones with Microphone have an average rating of 3.2 out of 5 stars. They are noise cancelling headphones, as indicated in the product description. Therefore, I would recommend these headphones to someone who is looking for noise cancelling headphones." |
-| 5 | high performance work laptop | "Based on the provided context, I would recommend the product with the ASIN B00BN0LHF8, titled ""Samsung NP540U3C-A03UB Series 5 13.3"" Touch-Screen Laptop. This product has an average rating of 3.5, indicating that it has a reasonable level of performance for its intended purpose, which is a high performance work laptop." |
-| 6 | super fast wireless charger | "I'm sorry, but I'm unable to provide a meaningful answer based on the provided context. The context only contains information about product ratings but does not mention any super fast wireless charger. Please provide additional context or clarify your question." |
-| 7 | battery pack for charging laptops | "The product ""Battery Pack for Charging Laptops"" has an average rating of 3.9, which indicates that it is a good quality product. The product uses the USB charging port and has a TSA. The review says this product is very good and worth it." |
-| 8 | extension cord for usb-a to usb-c | "The most suitable product for an extension cord to connect USB-A to USB-C is the one with the ASIN B08XB3B6FY. This product has an average rating of 4.5 stars, indicating a higher rating than the other options, suggesting it is more satisfactory in terms of its performance and customer satisfaction." |
-| 9 | active noise cancelling bluetooth sony wm-1000xm4 | The product ""Wireless Bluetooth Headphones Waterproof IPX7, Best Sport in Ear Earbuds Earphones w/Remote and Mic"" (ASIN: B07H92ZDZL) is recommended based on the average rating of 4.3 out of 5." |
-| 10 | white gaming mouse for left handed people | "White gaming mouse for left handed people: Logitech 910002698 M525 Wireless Mouse, Compact, Right/Left, Blue" |
+| 2 | 1080p gaming monitor | "Based on the provided information, the product that best fits your requirement for a 1080p gaming monitor is the "GIGABYTE GeForce RTX 3060 Gaming OC 12G (REV2.0) Graphics Card, 3X WINDFORCE Fans, 12GB 192-bit GDDR6" with an average rating of 4.7. This monitor is specifically designed for high-performance gaming and offers excellent graphics capabilities suitable for modern gaming needs." |
+| 3 | high performance work laptop | "Based on the provided context, I would recommend the product with the ASIN B00BN0LHF8, titled ""Samsung NP540U3C-A03UB Series 5 13.3"" Touch-Screen Laptop. This product has an average rating of 3.5, indicating that it has a reasonable level of performance for its intended purpose, which is a high performance work laptop." |
+| 4 | super fast wireless charger | "I'm sorry, but I'm unable to provide a meaningful answer based on the provided context. The context only contains information about product ratings but does not mention any super fast wireless charger. Please provide additional context or clarify your question." |
+| 5 | extension cord for usb-a to usb-c | "The most suitable product for an extension cord to connect USB-A to USB-C is the one with the ASIN B08XB3B6FY. This product has an average rating of 4.5 stars, indicating a higher rating than the other options, suggesting it is more satisfactory in terms of its performance and customer satisfaction." |
 
-Query 1:
+Query 1: wireless bluetooth headphones
 
 | Dimension | What to assess | Yes/No |
 |---|-------|-----|
-| Accuracy | Is the answer factually correct based on the reviews? |  |
-| Completeness | Does the answer address all aspects of the question? |  |
-| Fluency | Is the answer natural, clear, and easy to read? |  |
+| Accuracy | Is the answer factually correct based on the reviews? | No |
+| Completeness | Does the answer address all aspects of the question? | No |
+| Fluency | Is the answer natural, clear, and easy to read? | Yes |
 
-- 
-- 
-- 
-
-Query 2:
+Query 2: 1080p gaming monitor
 
 | Dimension | What to assess | Yes/No |
 |---|-------|-----|
-| Accuracy | Is the answer factually correct based on the reviews? |  |
-| Completeness | Does the answer address all aspects of the question? |  |
-| Fluency | Is the answer natural, clear, and easy to read? |  |
+| Accuracy | Is the answer factually correct based on the reviews? | Yes |
+| Completeness | Does the answer address all aspects of the question? | Yes |
+| Fluency | Is the answer natural, clear, and easy to read? | Yes |
 
-- 
-- 
-- 
-
-Query 3:
+Query 3: high performance work laptop
 
 | Dimension | What to assess | Yes/No |
 |---|-------|-----|
-| Accuracy | Is the answer factually correct based on the reviews? |  |
-| Completeness | Does the answer address all aspects of the question? |  |
-| Fluency | Is the answer natural, clear, and easy to read? |  |
+| Accuracy | Is the answer factually correct based on the reviews? | Yes |
+| Completeness | Does the answer address all aspects of the question? | Yes |
+| Fluency | Is the answer natural, clear, and easy to read? | Yes |
 
-- 
-- 
-- 
-
-Query 4:
+Query 4: super fast wireless charger
 
 | Dimension | What to assess | Yes/No |
 |---|-------|-----|
-| Accuracy | Is the answer factually correct based on the reviews? |  |
-| Completeness | Does the answer address all aspects of the question? |  |
-| Fluency | Is the answer natural, clear, and easy to read? |  |
+| Accuracy | Is the answer factually correct based on the reviews? | No |
+| Completeness | Does the answer address all aspects of the question? | No |
+| Fluency | Is the answer natural, clear, and easy to read? | Yes |
 
-- 
-- 
-- 
-
-Query 5:
+Query 5: extension cord for usb-a to usb-c
 
 | Dimension | What to assess | Yes/No |
 |---|-------|-----|
-| Accuracy | Is the answer factually correct based on the reviews? |  |
-| Completeness | Does the answer address all aspects of the question? |  |
-| Fluency | Is the answer natural, clear, and easy to read? |  |
+| Accuracy | Is the answer factually correct based on the reviews? | Yes |
+| Completeness | Does the answer address all aspects of the question? | No |
+| Fluency | Is the answer natural, clear, and easy to read? | No |
 
-- 
-- 
-- 
+
+- Overall, introducing a RAG pipeline to our inital semantic/BM25 search methods resulted in clearer and more customizable responses to user queries. Through our testing, we discovered that the initial system prompt plays a big role in determining the performance of the RAG. An example of this is the product title not being mentioned in the response because we didn't explicitly tell the LLM to include the product title in its response.
+- One of the limitations of our Hybrid RAG workflow is that it is subject to weight assigned to the BM25 and Semantic retrievers. Currently, it is favored toward BM25 which might not be the most optimal, as it is unlikely the user will include exact phrasing of reviews or product titles in their queries. Further, the quality of the output is heavily subject to the HuggingFace model chosen, as more expensive and capable models will have larger context windows and be able to make smarter inferences.
+- Improvement that could be further made to this workflow include: a randomized search on the weights of the BM25 and semantic retrievers to find the ratio that gives the best results, as well as experimenting on the size of chunking to allow for more varied results while still keeping a good amount of information per document.
