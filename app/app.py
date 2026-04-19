@@ -27,33 +27,23 @@ bm25 = bm25_data["bm25"]
 doc_names = bm25_data["doc_names"]
 
 generator = pipeline(
-                "text-generation",
-                model="Qwen/Qwen2.5-0.5B-Instruct",
-                max_new_tokens=128,
-                do_sample=True,
-            )
+    "text-generation",
+    model="Qwen/Qwen2.5-0.5B-Instruct",
+    max_new_tokens=128,
+    do_sample=True,
+)
 llm = HuggingFacePipeline(pipeline=generator)
 print("[DONE] BUILDING GENERATOR")
 hybrid_retriever = build_hybrid_retriever()
 
-# ── Result card (Search Only) ──────────────────────────────────────────────────
+# -- Result card ---------------------------------------------------------------
 
 def result_card(i, r):
-    # Safely pull average rating if the column exists
-    rating = r.get("average_rating") if hasattr(r, "get") else r.get("average_rating", None)
+    rating = r.get("average_rating") if hasattr(r, "get") else None
     rating_badge = (
         ui.span(f"Rating: {rating:.1f}", class_="rating-badge")
         if rating is not None else ui.span()
     )
-    # # First 200 chars of review text
-    # preview = ""
-    # for col in ("review_text", "reviewText", "body", "text"):
-    #     if col in r and r[col]:
-    #         preview = str(r[col])[:200]
-    #         break
-
-    preview = None
-    
     return ui.div(
         ui.div(
             ui.span(f"#{i+1}", class_="rank-badge"),
@@ -61,12 +51,11 @@ def result_card(i, r):
             class_="card-header-row"
         ),
         ui.h4(r["product_title"], class_="product-title"),
-        ui.p(preview + ("…" if len(preview) == 200 else ""), class_="review-preview") if preview else ui.span(),
         class_="result-card"
     )
 
 
-# ── UI ─────────────────────────────────────────────────────────────────────────
+# -- UI ------------------------------------------------------------------------
 
 app_ui = ui.page_fluid(
     ui.tags.head(
@@ -89,40 +78,27 @@ app_ui = ui.page_fluid(
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: var(--bg); color: var(--text); font-family: 'DM Mono', monospace; min-height: 100vh; }
         .app-wrap { max-width: 860px; margin: 0 auto; padding: 48px 24px; }
-        .app-header { margin-bottom: 40px; }
+        .app-header { margin-bottom: 32px; }
         .app-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 2.4rem; letter-spacing: -1px; line-height: 1; }
         .app-title span { color: var(--accent); }
         .app-sub { color: var(--muted); font-size: 0.82rem; margin-top: 8px; }
 
-        /* ── Mode tabs ── */
-        .mode-tabs { display: flex; gap: 0; margin-bottom: 32px; border: 1.5px solid var(--border); border-radius: var(--radius); overflow: hidden; width: fit-content; }
-        .mode-tab {
-            padding: 10px 24px;
+        /* Shiny nav tabs */
+        .nav-tabs { border-bottom: 1.5px solid var(--border); margin-bottom: 28px; }
+        .nav-tabs .nav-link {
             font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.85rem;
-            cursor: pointer; background: var(--surface); color: var(--muted);
-            border: none; transition: all 0.18s; user-select: none;
+            color: var(--muted); background: none; border: none;
+            padding: 10px 24px; border-radius: 0; transition: color 0.18s;
         }
-        .mode-tab.active { background: var(--accent); color: #0e0f13; }
-        .mode-tab:not(:last-child) { border-right: 1.5px solid var(--border); }
-
-        /* ── Sub-mode radio pills (Search Only) ── */
-        .shiny-input-radiogroup > label { display: none; }
-        .shiny-input-radiogroup .shiny-options-group { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
-        .shiny-input-radiogroup input[type=radio] { display: none; }
-        .shiny-input-radiogroup label.radio {
-        display: inline-flex !important;
-        align-items: center;
-        padding: 8px 18px;
-        border: 1.5px solid var(--border);
-        border-radius: 999px;
-        cursor: pointer;
-        font-family: 'Syne', sans-serif; font-size: 0.85rem; font-weight: 600;
-        color: var(--muted); transition: all 0.18s; background: var(--surface);
+        .nav-tabs .nav-link:hover { color: var(--text); }
+        .nav-tabs .nav-link.active {
+            color: var(--accent) !important; background: none !important;
+            border-bottom: 2.5px solid var(--accent) !important;
         }
-        .shiny-input-radiogroup label.radio:has(input:checked) { background: var(--accent); border-color: var(--accent); color: #0e0f13; }
+        .tab-content { padding-top: 8px; }
 
-        /* ── Search bar ── */
-        .search-wrap { display: flex; gap: 10px; margin-bottom: 36px; }
+        /* Search bar */
+        .search-wrap { display: flex; gap: 10px; margin-bottom: 36px; margin-top: 20px; }
         .search-wrap input[type=text] {
             flex: 1; background: var(--surface); border: 1.5px solid var(--border);
             border-radius: var(--radius); color: var(--text); font-family: 'DM Mono', monospace;
@@ -137,108 +113,84 @@ app_ui = ui.page_fluid(
         }
         .search-btn:hover { opacity: 0.85; }
 
-        /* ── Result cards ── */
+        /* Mode select */
+        .selectize-input {
+            background: var(--surface) !important; border: 1.5px solid var(--border) !important;
+            color: var(--text) !important; font-family: 'DM Mono', monospace !important;
+            border-radius: var(--radius) !important; margin-bottom: 20px;
+        }
+        .selectize-dropdown {
+            background: var(--surface) !important; border: 1.5px solid var(--border) !important;
+            color: var(--text) !important;
+        }
+        .selectize-dropdown .option:hover { background: var(--surface2) !important; }
+
+        /* Result cards */
         .results-label { font-family: 'Syne', sans-serif; font-size: 0.75rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
         .result-card { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 22px 24px; margin-bottom: 14px; transition: border-color 0.18s; }
         .result-card:hover { border-color: var(--accent); }
         .card-header-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
         .rank-badge { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 0.78rem; color: var(--accent); }
         .rating-badge { font-family: 'Syne', sans-serif; font-weight: 600; font-size: 0.78rem; color: var(--accent2); margin-left: auto; }
-        .product-title { font-family: 'Syne', sans-serif; font-size: 1.05rem; font-weight: 600; color: var(--text); margin-bottom: 10px; line-height: 1.35; }
-        .review-preview { font-size: 0.82rem; color: var(--muted); line-height: 1.6; margin-top: 6px; }
+        .product-title { font-family: 'Syne', sans-serif; font-size: 1.05rem; font-weight: 600; color: var(--text); line-height: 1.35; }
 
-        /* ── RAG answer panel ── */
-        .rag-answer-wrap { margin-bottom: 28px; }
+        /* RAG answer */
         .rag-answer-label { font-family: 'Syne', sans-serif; font-size: 0.75rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--accent2); margin-bottom: 10px; }
         .rag-answer {
             background: var(--surface2); border: 1.5px solid var(--accent2);
             border-radius: var(--radius); padding: 22px 24px;
             font-size: 0.92rem; line-height: 1.7; color: var(--text);
         }
-        .rag-thinking { color: var(--muted); font-size: 0.85rem; font-style: italic; }
-        .rag-sources-label { font-family: 'Syne', sans-serif; font-size: 0.72rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin: 20px 0 10px; }
 
-        /* ── Empty / loading states ── */
+        /* Empty states */
         .empty-state { text-align: center; padding: 60px 0; color: var(--muted); font-size: 0.85rem; }
         .empty-state .icon { font-size: 2.5rem; margin-bottom: 12px; }
-
-        /* ── Panel visibility ── */
-        .panel { display: none; }
-        .panel.visible { display: block; }
-        """),
-        # Tiny JS to handle the mode-tab toggle (flips a hidden Shiny input)
-        ui.tags.script("""
-        function switchMode(mode) {
-            document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
-            document.getElementById('tab-' + mode).classList.add('active');
-            document.querySelectorAll('.panel').forEach(p => p.classList.remove('visible'));
-            document.getElementById('panel-' + mode).classList.add('visible');
-        }
-        document.addEventListener('DOMContentLoaded', function() {
-            switchMode('search');
-        });
         """)
     ),
     ui.div(
-        # Header
         ui.div(
             ui.h1(ui.HTML('Product <span>Search</span>'), class_="app-title"),
             ui.p("Amazon product retrieval · Semantic & BM25 · RAG", class_="app-sub"),
             class_="app-header"
         ),
-
-        # Mode tabs
-        ui.div(
-            ui.tags.button("Search Only", id="tab-search",  class_="mode-tab active",
-                           onclick="switchMode('search')"),
-            ui.tags.button("RAG Mode",    id="tab-rag",     class_="mode-tab",
-                           onclick="switchMode('rag')"),
-            class_="mode-tabs"
-        ),
-
-
-        # ── PANEL: Search Only ────────────────────────────────────────────────
-        ui.div(
-            ui.input_select(
-                "search_mode", None,
-                choices={"semantic": "Semantic", "bm25": "BM25"},
-                selected="semantic",
-                width="200px"
+        ui.navset_tab(
+            ui.nav_panel("Search Only",
+                ui.input_select(
+                    "search_mode", None,
+                    choices={"semantic": "Semantic", "bm25": "BM25"},
+                    selected="semantic",
+                    width="200px"
+                ),
+                ui.div(
+                    ui.input_text("search_query", None,
+                                  placeholder="e.g. best gaming headset for under $30",
+                                  width="100%"),
+                    ui.input_action_button("search_btn", "Search", class_="search-btn"),
+                    class_="search-wrap"
+                ),
+                ui.div(ui.output_ui("search_results")),
             ),
-            ui.div(
-                ui.input_text("search_query", None,
-                              placeholder="e.g. best gaming headset for under $30",
-                              width="100%"),
-                ui.input_action_button("search_btn", "Search", class_="search-btn"),
-                class_="search-wrap"
+            ui.nav_panel("RAG Mode",
+                ui.div(
+                    ui.input_text("rag_query", None,
+                                  placeholder="e.g. What's a good waterproof laptop?",
+                                  width="100%"),
+                    ui.input_action_button("rag_btn", "Ask", class_="search-btn"),
+                    class_="search-wrap"
+                ),
+                ui.div(ui.output_ui("rag_results")),
             ),
-            ui.div(ui.output_ui("search_results")),
-            id="panel-search", class_="panel visible"
+            id="main_tabs"
         ),
-
-        # ── PANEL: RAG Mode ───────────────────────────────────────────────────
-        ui.div(
-            ui.div(
-                ui.input_text("rag_query", None,
-                              placeholder="e.g. What's a good waterproof laptop?",
-                              width="100%"),
-                ui.input_action_button("rag_btn", "Ask", class_="search-btn"),
-                class_="search-wrap"
-            ),
-            # ui.div(ui.output_ui("rag_loading_ui")),
-            ui.div(ui.output_ui("rag_results")),
-            id="panel-rag", class_="panel"
-        ),
-
         class_="app-wrap"
     )
 )
 
 
-# ── Server ─────────────────────────────────────────────────────────────────────
+# -- Server --------------------------------------------------------------------
 
 def server(input, output, session):
-    
+
     @output
     @render.ui
     @reactive.event(input.search_btn)
@@ -263,52 +215,6 @@ def server(input, output, session):
             *[result_card(i, r) for i, r in enumerate(hits)]
         )
 
-    # @output
-    # @render.ui
-    # @reactive.event(input.rag_btn)
-    # async def rag_results():
-    #     query = input.rag_query().strip()
-    #     if not query:
-    #         return ui.p("Enter a question.")
-        
-    #     ui.notification_show("Running RAG pipeline...", duration=None, id="rag_notif")
-    #     answer = await asyncio.to_thread(run_hybrid_chain, query)
-    #     ui.notification_remove("rag_notif")
-        
-    #     return ui.p(answer)
-    # rag_answer = reactive.Value(None)
-    # rag_loading = reactive.Value(False)
-
-    # @reactive.effect
-    # @reactive.event(input.rag_btn)
-    # def trigger_rag():
-    #     query = input.rag_query().strip()
-    #     if not query:
-    #         return
-    #     with reactive.isolate():
-    #         rag_loading.set(True)
-    #         rag_answer.set(None)
-    #     try:
-    #         answer = run_hybrid_chain(query, hybrid_retriever, llm)
-    #         print(f"[SERVER] Answer received: {answer}")
-    #     except Exception as e:
-    #         print(f"[SERVER] Error: {e}")
-    #         answer = f"Error: {str(e)}"
-    #     finally:
-    #         rag_loading.set(False)
-    #         rag_answer.set(answer)
-
-    # @output
-    # @render.ui
-    # def rag_loading_ui():
-    #     if rag_loading():
-    #         return ui.div(
-    #             ui.div("⏳", class_="icon"),
-    #             ui.p("Running RAG pipeline... this may take a moment."),
-    #             class_="empty-state"
-    #         )
-    #     return ui.span()
-
     @output
     @render.ui
     @reactive.event(input.rag_btn)
@@ -330,80 +236,6 @@ def server(input, output, session):
             )
         except Exception as e:
             return ui.div(ui.div("❌", class_="icon"), ui.p(f"Error: {str(e)}"), class_="empty-state")
-
-    # @output
-    # @render.ui
-    # @reactive.event(input.rag_btn)
-    # def rag_results():
-    #     query = input.rag_query().strip()
-    #     if not query:
-    #         return ui.p("Enter a question.")
-        
-    #     answer = run_hybrid_chain(query)
-    #     return ui.p(answer)
-    # def rag_results():
-    #     query = input.rag_query().strip()
-    #     if not query:
-    #         return ui.div(ui.div("💬", class_="icon"), ui.p("Ask a question to get a RAG-powered answer"), class_="empty-state")
-
-    #     answer = run_hybrid_chain(query)
-    #     print(f"[RAG] query received: {query}")
-    #     answer = run_hybrid_chain(query)
-    #     hits = semantic_search(docs, model, index, query, k=5)
-    #     print(f"[RAG] answer generated: {answer[:100]}")
-
-    #     return ui.div(
-    #         ui.p("Answer", class_="rag-answer-label"),
-    #         ui.div(answer, class_="rag-answer"),
-    #         ui.p("Retrieved sources", class_="rag-sources-label"),
-    #         *[result_card(i, r) for i, r in enumerate(hits)]
-    #     )
-
-
-    # # ── RAG Mode ──────────────────────────────────────────────────────────────
-
-    # @output
-    # @render.ui
-    # @reactive.event(input.rag_btn)
-    # def rag_results():
-    #     query = input.rag_query().strip()
-    #     if not query:
-    #         return ui.div(
-    #             ui.div("💬", class_="icon"),
-    #             ui.p("Ask a question to get a RAG-powered answer"),
-    #             class_="empty-state"
-    #         )
-
-    #     # 1. Retrieve context docs via semantic search
-    #     hits = semantic_search(docs, model, index, query, k=5)
-
-    #     # 2. Build context string for the LLM
-    #     context_parts = []
-    #     for i, r in enumerate(hits):
-    #         title = r.get("product_title", "Unknown product")
-    #         review = ""
-    #         for col in ("review_text", "reviewText", "body", "text"):
-    #             if col in r and r[col]:
-    #                 review = str(r[col])[:400]
-    #                 break
-    #         context_parts.append(f"[{i+1}] {title}\n{review}")
-    #     context = "\n\n".join(context_parts)
-
-    #     # 3. Generate answer — swap in your preferred LLM call here
-    #     answer = rag_generate(query, context)   # defined in utils.py
-
-    #     # 4. Render
-    #     return ui.div(
-    #         # Answer panel
-    #         ui.div(
-    #             ui.p("Answer", class_="rag-answer-label"),
-    #             ui.div(answer, class_="rag-answer"),
-    #             class_="rag-answer-wrap"
-    #         ),
-    #         # Source cards
-    #         ui.p("Retrieved sources", class_="rag-sources-label"),
-    #         *[result_card(i, r) for i, r in enumerate(hits)]
-    #     )
 
 
 app = App(app_ui, server)
