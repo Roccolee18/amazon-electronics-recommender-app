@@ -20,8 +20,21 @@ In short: the following columns were dropped in meta `["images", "videos", "subt
 ## Current Types of Retrieval Systems:
 
 Currently there are 2 types of retrieval systems being explored:
+
 1. BM25 -> Keyword TF-IDF based. Expected to preform the best when there's high exact-word matching between a query and the products.
+
 2. Semantic -> Embedding-based. Expected to preform the best when there's a more natural language or conceptual queries and the products semantic best match the overall meaning and intent of the user query.capturing meaning beyond exact keyword overlap.
+
+3. RAG (Retrieval-Augmented Generation) → Combines the retrieval step with a generative language model (llm response). The retrieved documents are passed as context to the model, which then give a more natural language response that's grounded in context of the product data. Two RAG workflows are available planned:
+
+    - Semantic RAG: uses the semantic (embedding-based) retriever to fetch relevant documents, then passes them to the generative model.
+    - Hybrid RAG: uses a hybrid of BM25 and semantic retrieval before passing results to the generative model, aiming to combine the strengths of both approaches.
+
+A diagram of the workflow can be seen below:
+![](RAG_workflow.png)
+
+### Model Choice for RAG:
+For the RAG workflow, we use Qwen/Qwen2.5-0.5B as our generative model. This was chosen to try balance performance with our local compute constraints — the larger 1.5B variant of the same family was ruled out due to response times being too slow within the Shiny app. As a decoder-only model, it is well suited for the text generation step in a RAG pipeline. Alternative decoder-only models that could be use include `microsoft/phi-2`, `microsoft/phi-3-mini-4k-instruct`, and `google/gemma-2-2b-it, but they are subject to local computing power.
 
 ## Recreating Project Workflow
 
@@ -85,24 +98,27 @@ python ./src/bm25.py  # BM25 (keyword-based) search
 python ./src/semantic.py # Semantic search
 ```
 
-## 7. Run Retrieval on Example Queries
+## 7. Run Basic Retrievals on Example Queries
 This runs examples queries that are available in `results/queries.csv` (this can be changed an customized if desired) against both retrieval methods and outputs the results in `results/query_results.csv`. From these 10 example queries provided 5 were chosen to compare, reflect and review the performance of the methods.  
 
 ```bash
 python src/query_retrieval.py
 ```
 
-## 8. Run Semanic Search with Retriever Augmented Generator (RAG) Pipeline
-The following code runs a RAG pipeline (located in `src/rag_pipeline.py`) that uses Semantic search as a retriever to gather documents relevant to the user's query. The relevant documents and a base system prompt are passed to a Large Language Model (LLM), from which a response is generated and returned. You may edit the `query` argument in the run_chain function to pass your own query to the LLM. 
-
+## 8. Run RAG pipelines on Example Queries
+Step 1:
 ```bash
-python src/rag_pipeline.py
+#run lang-chain specific retrievers first: 
+python src/langc_bm25.py
+python src/langc_semantic.py
 ```
 
-## 9. Run Hybrid Retriever with RAG Pipeline
-If the performance of a Semantic serarch retriever is not enough to answer your query, you can try passing the same query into a RAG pipeline that uses a weighted sum to combine the results of a Semantic and BM25 retriever. Again, you may input your query into the `query` parameter in the run_hybrid_chain function located in `hybrid.py`.  
-
+Step 2:
 ```bash
+#For specific-semantic RAG, run:
+# python src/rag_pipeline.py
+
+#For specific-hybrid RAG /running RAG on the same 10 Example Queries
 python src/hybrid.py
 ```
 
