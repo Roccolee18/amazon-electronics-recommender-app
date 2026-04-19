@@ -11,7 +11,8 @@ from app_utils import *
 import pickle
 from transformers import pipeline
 from langchain_huggingface import HuggingFacePipeline
-
+from transformers import AutoTokenizer
+tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen2.5-0.5B-Instruct")
 
 # Load data & models
 table = pq.read_table("./data/processed/product_documents.parquet")
