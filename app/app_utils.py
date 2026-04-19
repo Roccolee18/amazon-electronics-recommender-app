@@ -175,43 +175,47 @@ def build_hybrid_retriever():
     print("[DONE] BUILDING HYBRID RETRIEVER")
     return hybrid_retriever
 
-def run_hybrid_chain(query, hybrid_retriever, llm):
-    system_prompt = """
-                            You are a helpful Amazon shopping assistant.
-                            Answer the question using ONLY the following context (which contains real product reviews + metadata).
-                            Always cite the product ASIN and return a product title when possible. If the answer isn't in the context, say so.
-                            Give me a summary of your response starting with "Assistant:"
-                            """
+def run_hybrid_chain(query, hybrid_retriever, llm, tokenizer):
+    system_prompt = """You are a helpful Amazon shopping assistant.
+    Answer the question using ONLY the following context (which contains real product reviews + metadata).
+    Always cite the product ASIN and return a product title when possible. If the answer isn't in the context, say so."""
 
     print(f"[RAG] Invoking retriever for query: {query}")
     docs = hybrid_retriever.invoke(query)
     print(f"[RAG] Retrieved {len(docs)} docs")
-    
+
     context = build_context(docs)
     print(f"[RAG] Context built, length: {len(context)}")
 
-    text_prompt = build_prompt(system_prompt, query, context)
-    full_prompt = ChatPromptTemplate.from_template(text_prompt)
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": f"Context:\n{context}\n\nQuestion: {query}"}
+    ]
+
+    prompt = tokenizer.apply_chat_template(
+        messages,
+        tokenize=False,
+        add_generation_prompt=True
+    )
+
     print(f"[RAG] Invoking LLM...")
 
     hybrid_rag_chain = (
-            {
-                "context": hybrid_retriever |  RunnableLambda(build_context),
-                "query": RunnablePassthrough()
-            }
-            | full_prompt
-            | llm
-            | StrOutputParser()
-        )
+        RunnablePassthrough()
+        | RunnableLambda(lambda _: prompt)
+        | llm
+        | StrOutputParser()
+    )
+
     print("[DONE] BUILDING HYBRID RAG CHAIN")
     response = hybrid_rag_chain.invoke(query)
-    # response = llm.invoke(text_prompt)
     print(f"[RAG] Raw response: {response}")
 
-    response_cut = response.split("Assistant:", 1)[-1].strip()
-    print(f"[RAG] Final response: {response_cut}")
+    # Strip the prompt from the output
+    answer = response[len(prompt):].strip() if response.startswith(prompt) else response.strip()
+    print(f"[RAG] Final response: {answer}")
 
-    return response_cut
+    return answer
 
 ############################## Langchain Utils Functions ##############################
 def load_documents(parquet_path = "data/processed/product_documents.parquet", 

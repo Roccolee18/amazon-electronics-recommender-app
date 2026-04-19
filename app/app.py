@@ -30,8 +30,8 @@ doc_names = bm25_data["doc_names"]
 generator = pipeline(
     "text-generation",
     model="Qwen/Qwen2.5-0.5B-Instruct",
-    max_new_tokens=128,
-    do_sample=True,
+    max_new_tokens=256,
+    do_sample=False,
 )
 llm = HuggingFacePipeline(pipeline=generator)
 print("[DONE] BUILDING GENERATOR")
@@ -228,7 +228,7 @@ def server(input, output, session):
                 class_="empty-state"
             )
         try:
-            answer = run_hybrid_chain(query, hybrid_retriever, llm)
+            answer = run_hybrid_chain(query, hybrid_retriever, llm, tokenizer)
             if not answer:
                 return ui.div(ui.div("😕", class_="icon"), ui.p("No answer generated."), class_="empty-state")
             return ui.div(
