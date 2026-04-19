@@ -28,7 +28,7 @@ doc_names = bm25_data["doc_names"]
 
 generator = pipeline(
                 "text-generation",
-                model="Qwen/Qwen2.5-1.5B",
+                model="Qwen/Qwen2.5-0.5B-Instruct",
                 max_new_tokens=128,
                 do_sample=True,
             )
@@ -225,7 +225,7 @@ app_ui = ui.page_fluid(
                 ui.input_action_button("rag_btn", "Ask", class_="search-btn"),
                 class_="search-wrap"
             ),
-            ui.div(ui.output_ui("rag_loading_ui")),
+            # ui.div(ui.output_ui("rag_loading_ui")),
             ui.div(ui.output_ui("rag_results")),
             id="panel-rag", class_="panel"
         ),
@@ -276,45 +276,60 @@ def server(input, output, session):
     #     ui.notification_remove("rag_notif")
         
     #     return ui.p(answer)
-    rag_answer = reactive.Value(None)
-    rag_loading = reactive.Value(False)
+    # rag_answer = reactive.Value(None)
+    # rag_loading = reactive.Value(False)
 
-    @reactive.effect
+    # @reactive.effect
+    # @reactive.event(input.rag_btn)
+    # def trigger_rag():
+    #     query = input.rag_query().strip()
+    #     if not query:
+    #         return
+    #     with reactive.isolate():
+    #         rag_loading.set(True)
+    #         rag_answer.set(None)
+    #     try:
+    #         answer = run_hybrid_chain(query, hybrid_retriever, llm)
+    #         print(f"[SERVER] Answer received: {answer}")
+    #     except Exception as e:
+    #         print(f"[SERVER] Error: {e}")
+    #         answer = f"Error: {str(e)}"
+    #     finally:
+    #         rag_loading.set(False)
+    #         rag_answer.set(answer)
+
+    # @output
+    # @render.ui
+    # def rag_loading_ui():
+    #     if rag_loading():
+    #         return ui.div(
+    #             ui.div("⏳", class_="icon"),
+    #             ui.p("Running RAG pipeline... this may take a moment."),
+    #             class_="empty-state"
+    #         )
+    #     return ui.span()
+
+    @output
+    @render.ui
     @reactive.event(input.rag_btn)
-    def trigger_rag():
+    def rag_results():
         query = input.rag_query().strip()
         if not query:
-            return
-        rag_loading.set(True)
-        rag_answer.set(None)
-        try:
-            rag_loading.set(True)
-            answer = run_hybrid_chain(query, hybrid_retriever, llm)
-            rag_answer.set(answer)
-        finally:
-            rag_loading.set(False)
-
-    @output
-    @render.ui
-    def rag_loading_ui():
-        if rag_loading():
             return ui.div(
-                ui.div("⏳", class_="icon"),
-                ui.p("Running RAG pipeline... this may take a moment."),
+                ui.div("💬", class_="icon"),
+                ui.p("Ask a question to get a RAG-powered answer"),
                 class_="empty-state"
             )
-        return ui.span()
-
-    @output
-    @render.ui
-    def rag_results():
-        answer = rag_answer()
-        if answer is None:
-            return ui.span()
-        return ui.div(
-            ui.p("Answer", class_="rag-answer-label"),
-            ui.div(answer, class_="rag-answer"),
-        )
+        try:
+            answer = run_hybrid_chain(query, hybrid_retriever, llm)
+            if not answer:
+                return ui.div(ui.div("😕", class_="icon"), ui.p("No answer generated."), class_="empty-state")
+            return ui.div(
+                ui.p("Answer", class_="rag-answer-label"),
+                ui.div(answer, class_="rag-answer"),
+            )
+        except Exception as e:
+            return ui.div(ui.div("❌", class_="icon"), ui.p(f"Error: {str(e)}"), class_="empty-state")
 
     # @output
     # @render.ui
