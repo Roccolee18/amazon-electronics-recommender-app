@@ -15,13 +15,13 @@ from transformers import AutoTokenizer
 tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen2.5-0.5B-Instruct")
 
 # Load data & models
-table = pq.read_table("./data/processed/product_documents.parquet")
+table = pq.read_table("./product_documents.parquet")
 docs = table.to_pandas()
 
 model = SentenceTransformer("all-MiniLM-L6-v2")
-index = faiss.read_index("./data/processed/semantic_search_index.faiss")
+index = faiss.read_index(".//semantic_search_index.faiss")
 
-with open("./data/processed/bm25_index.pkl", "rb") as f:
+with open(".//bm25_index.pkl", "rb") as f:
     bm25_data = pickle.load(f)
 
 bm25 = bm25_data["bm25"]

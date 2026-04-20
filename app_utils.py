@@ -148,11 +148,11 @@ def build_hybrid_retriever():
         model_name= "sentence-transformers/all-MiniLM-L6-v2")
 
     vectorstore = FAISS.load_local(
-            "data/processed/langchain_semantic_index", 
+            "/langchain_semantic_index", 
             embeddings, allow_dangerous_deserialization=True
         )
     print("[DONE] BUILDING VECTORSTORE")
-    docs = pd.read_parquet("data/processed/product_documents.parquet")
+    docs = pd.read_parquet("/product_documents.parquet")
     documents = [
         Document(
             page_content=row["document"],
@@ -218,7 +218,7 @@ def run_hybrid_chain(query, hybrid_retriever, llm, tokenizer):
     return answer
 
 ############################## Langchain Utils Functions ##############################
-def load_documents(parquet_path = "data/processed/product_documents.parquet", 
+def load_documents(parquet_path = "./product_documents.parquet", 
                     text_col= "document"):
 
     data = pd.read_parquet(parquet_path)
