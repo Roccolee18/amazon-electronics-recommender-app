@@ -29,8 +29,11 @@
 ### What You Implemented
 
 - Description of the feature
+- Cloud deployment of local web app through the Posit Cloud platform, accessible via this [link](https://roccolee18-amazon-electronics-recommender-app.share.connect.posit.cloud)
+
 - Key results or examples
-  
+- We successfully published our local Shiny web app onto the Posit Cloud platform. Achieving this required creating a fork of our repo and refactoring the file structure to only include the web app related code. The biggest challenge was scanning through our web-app code to find file dependancies and ensure those were transfered/kept in the forked repo to maintain functionality.
+
 ## Step 3: Improve Documentation and Code Quality
 
 ### Documentation Update
