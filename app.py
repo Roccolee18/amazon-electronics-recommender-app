@@ -19,9 +19,9 @@ table = pq.read_table("./product_documents.parquet")
 docs = table.to_pandas()
 
 model = SentenceTransformer("all-MiniLM-L6-v2")
-index = faiss.read_index(".//semantic_search_index.faiss")
+index = faiss.read_index("./semantic_search_index.faiss")
 
-with open(".//bm25_index.pkl", "rb") as f:
+with open("./bm25_index.pkl", "rb") as f:
     bm25_data = pickle.load(f)
 
 bm25 = bm25_data["bm25"]
