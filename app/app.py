@@ -1,5 +1,6 @@
 # ========================================== IMPORTS ==========================================
 import os
+import re
 os.environ["OMP_NUM_THREADS"] = "1"
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 import pickle
@@ -167,11 +168,13 @@ def server(input, output, session):
             )
         try:
             answer = run_chain(query, retriever=hybrid_retriever, llm_model=llm)
+            # Strip <think>...</think> block if present (reasoning model internal monologue)
+            answer = re.sub(r"<think>.*?</think>", "", answer, flags=re.DOTALL).strip()
             if not answer:
                 return ui.div(ui.p("No answer generated."), class_="empty-state")
             return ui.div(
                 ui.p("Answer", class_="rag-answer-label"),
-                ui.div(answer, class_="rag-answer"),
+                ui.div(ui.markdown(answer), class_="rag-answer"),
             )
         except Exception as e:
             return ui.div(ui.p(f"Error: {str(e)}"), class_="empty-state")
