@@ -31,4 +31,4 @@ for query in test_queries['queries']:
 master_retrieval = pd.DataFrame(master_retrieval)
 master_retrieval
 
-master_retrieval.to_csv('results/query_results.csv')
+master_retrieval.to_csv('results/query_results_milestone1.csv')

@@ -324,7 +324,7 @@ def run_hybrid_chain(
     return hybrid_rag_chain.invoke(query)
 
 
-def run_queries(test_queries_path, hybrid_retriever, system_prompt):
+def hybrid_run_queries(test_queries_path, hybrid_retriever, system_prompt):
     """Iterate over every query/model combination as an example,
       collect responses, and return a DataFrame."""
     

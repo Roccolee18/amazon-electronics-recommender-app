@@ -9,7 +9,7 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 # import pandas as pd
 # from langchain_core.documents import Document
 import argparse
-from utils import build_prompt, build_context, build_hybrid_retriever, build_llm_model, run_hybrid_chain, run_queries
+from utils import build_prompt, build_context, build_hybrid_retriever, build_llm_model, run_hybrid_chain, hybrid_run_queries
 from prompts import SYSTEM_PROMPT_1, SYSTEM_PROMPT_2, SYSTEM_PROMPT_3
 from dotenv import load_dotenv, find_dotenv
 
@@ -86,7 +86,7 @@ def main():
         
         print(f"Model: {args.llm_model}... Query: {args.query}, \n Response returned: {response}")
     else:
-        results_df = run_queries(
+        results_df = hybrid_run_queries(
             test_queries_path=args.queries_csv,
             hybrid_retriever=hybrid_retriever,
             # system_prompt=args.system_prompt #custom prompt
