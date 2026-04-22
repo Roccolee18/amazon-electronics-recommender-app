@@ -1,13 +1,21 @@
 import os
-
-from utils import load_documents, split_documents, build_bm25_retriever, bm25_search, print_top_results
 import pickle
 import argparse
+from utils import load_documents, split_documents, build_bm25_retriever, bm25_search, print_top_results
+
 
 
 def parse_args():
-    '''To accept arguments directly via bash/terminal commands'''
+    """
+    Serves as a centralized entry point for defining and managing the command-line 
+    arguments. These arguments will be parsed and be passed directly into functions 
+    being called within the script. Defaults are set for all arguments. This means 
+    the script can be run without any user-specified command-line arguments.
 
+    Returns:
+        argparse.ArgumentParser:
+            Configured parser instance used to define and retrieve CLI arguments.
+    """
     parser = argparse.ArgumentParser(description="Build a LangChain BM25 index from a parquet file.")
     parser.add_argument("--input",
                         default="data/processed/product_documents.parquet",
@@ -31,6 +39,7 @@ def parse_args():
                         help="Prevent rewriting the index if one exists")
     # For extra feature to test query after building index
     parser.add_argument("--query",
+                        type=str,
                         default=None,
                         help="Optional query to test after building")
     parser.add_argument("--k",
@@ -39,9 +48,7 @@ def parse_args():
                         help="Number of results to return for query")
     return parser.parse_args()
 
-def main():
-    '''Main function to build a LangChain BM25 retriever from a parquet file of product documents
-    and optionally tests it with a query.'''
+if __name__ == "__main__":
     print("[STATUS] Starting BM25 index process")
     
     args = parse_args()
@@ -84,7 +91,3 @@ def main():
 
         print(f"[RESULTS] Top {args.k} for query below:")
         print_top_results(top_k)
-
-
-if __name__ == "__main__":
-    main()

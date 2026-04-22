@@ -261,7 +261,7 @@ def print_top_results(top_k_docs):
 
 ############################## SEMANTIC RETRIEVAL ##############################
 
-def build_vect_retriever(faiss_folder = "data/processed/langchain_semantic_index",
+def build_vect_retriever(faiss_folder = "data/retrievers/semantic_index",
                         model= "sentence-transformers/all-MiniLM-L6-v2", 
                         k=5):
     """
@@ -283,7 +283,7 @@ def build_vect_retriever(faiss_folder = "data/processed/langchain_semantic_index
 ############################## HYBRID RETRIEVER ##############################
 
 def build_hybrid_retriever(
-    faiss_folder="data/processed/langchain_semantic_index",
+    faiss_folder="data/retrievers/semantic_index",
     bm25_pkl_path="data/processed/bm25_retriever.pkl",
     embedding_model="sentence-transformers/all-MiniLM-L6-v2",
     bm25_weight=0.4,
@@ -319,7 +319,9 @@ def build_hybrid_retriever(
 
     return hybrid_retriever
 
-def hybrid_run_queries(test_queries_path, hybrid_retriever, system_prompt):
+def hybrid_run_queries(test_queries_path, hybrid_retriever, system_prompt, 
+                       model_1 = "qwen/qwen3-32b", 
+                       model_2 = "openai/gpt-oss-120b"):
     """
     Iterate over every query/model combination to
     test multiple test queries across given LLMs to evaluate.
@@ -333,10 +335,10 @@ def hybrid_run_queries(test_queries_path, hybrid_retriever, system_prompt):
     
     test_queries = pd.read_csv(test_queries_path)
     results = []
-    models = {"Qwen3-32B": build_llm_model(local_call = False, api_model = "qwen/qwen3-32b"),
-            "Qwen2.5-1.5B": build_llm_model(local_call = True, local_model = "Qwen/Qwen2.5-1.5B", max_tokens=256)}
+    models = {model_1: ChatGroq(model=model_1),
+            model_2: ChatGroq(model=model_2)}
 
-    for model, llm in models:
+    for model, llm in models.items():
         for q in test_queries["queries"]:
             response = run_chain(
                 query=q,
@@ -432,16 +434,22 @@ def run_chain(
     Returns:
         str: Final model output.
     """
-    docs = retriever.invoke(query)
-    context = build_context(docs)
-    text_prompt = build_prompt(system_prompt, query, context)
-    full_prompt = ChatPromptTemplate.from_template(text_prompt)
+    # docs = retriever.invoke(query)
+    # context = build_context(docs)
+    # text_prompt = build_prompt(system_prompt, query, context)
+    # full_prompt = ChatPromptTemplate.from_template(text_prompt)
+
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", system_prompt),
+        ("human", "context:\n{context}\n\nquestion:\n{query}")
+    ])
+
     rag_chain = (
         {
             "context": retriever | RunnableLambda(build_context),
             "query": RunnablePassthrough(),
         }
-        | full_prompt
+        | prompt
         | llm_model
         | StrOutputParser()
     )

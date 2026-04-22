@@ -3,7 +3,16 @@ from pathlib import Path
 import duckdb
 
 def parse_args():
-    '''To accept arguments directly via bash/terminal commands'''
+    """
+    Serves as a centralized entry point for defining and managing the command-line 
+    arguments. These arguments will be parsed and be passed directly into functions 
+    being called within the script. Defaults are set for all arguments. This means 
+    the script can be run without any user-specified command-line arguments.
+
+    Returns:
+        argparse.ArgumentParser:
+            Configured parser instance used to define and retrieve CLI arguments.
+    """
     p = argparse.ArgumentParser()
     p.add_argument("--input",   
                    default="data/processed/merged_subset.parquet")
@@ -11,9 +20,7 @@ def parse_args():
                    default="data/processed/product_documents.parquet")
     return p.parse_args()
 
-def main():
-    '''Main function to preprocess and combine relevant columns 
-    from the merged Parquet file into a single "product document" for each product.'''
+if __name__ == "__main__":
     args = parse_args()
 
     input_path = Path(args.input)
@@ -47,7 +54,4 @@ def main():
         f"COPY ({QUERY}) TO '{output_path.as_posix()}' (FORMAT PARQUET, COMPRESSION ZSTD)",
     )
     print("[STATUS] Documentation creation completed.")
-    print("[NOTE] Currently product documentation is just of the merged subset \n       in order to prioritize a working pipeline.")
-
-if __name__ == "__main__":
-    main()
+    print("[NOTE] Currently product documentation is just from the merged subset\n     (sample size according to arguments passed when created).")

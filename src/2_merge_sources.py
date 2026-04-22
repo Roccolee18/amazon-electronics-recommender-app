@@ -1,14 +1,3 @@
-"""
-Usage:
-    python 2_merge_sources.py
-    python 2_merge_sources.py \
-        --meta-raw data/processed/meta_raw.parquet \
-        --reviews-raw data/processed/reviews_raw.parquet \
-        --out-dir data/processed
-References:
-    ilyamusabirov/525eda_duckdb.md: https://gist.github.com/ilyamusabirov/9491e5ce6ae2fc63d6222609cebd0588
-"""
-
 import argparse
 from pathlib import Path
 import duckdb
@@ -18,7 +7,16 @@ from utils import read_meta_txt_columns
 default_meta_cols = read_meta_txt_columns()
 
 def parse_args():
-    '''To accept arguments directly via bash/terminal commands'''
+    """
+    Serves as a centralized entry point for defining and managing the command-line 
+    arguments. These arguments will be parsed and be passed directly into functions 
+    being called within the script. Defaults are set for all arguments. This means 
+    the script can be run without any user-specified command-line arguments.
+
+    Returns:
+        argparse.ArgumentParser:
+            Configured parser instance used to define and retrieve CLI arguments.
+    """
     p = argparse.ArgumentParser(description="Left-join meta and reviews Parquet files on parent_asin.")
     p.add_argument("--meta-raw",
                    default="data/raw/meta_raw.parquet",
@@ -38,9 +36,7 @@ def parse_args():
                    help="Column to join on (default: parent_asin)")
     return p.parse_args()
 
-
-def main():
-    ''' Main script function loop to merge both source files into one. '''
+if __name__ == "__main__":
     args = parse_args()
     out = Path(args.out_dir)
     out.mkdir(parents=True, exist_ok=True)
@@ -65,6 +61,3 @@ def main():
     con.close()
     print("[STATUS] Merge complete. DuckDB connection closed.")
     print(f"[SAVED] Merged files")
-
-if __name__ == "__main__":
-    main()

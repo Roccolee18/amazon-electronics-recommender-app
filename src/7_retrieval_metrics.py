@@ -5,7 +5,16 @@ import argparse
 from itertools import zip_longest
 
 def parse_args():
-    '''To accept arguments directly via bash/terminal commands'''
+    """
+    Serves as a centralized entry point for defining and managing the command-line 
+    arguments. These arguments will be parsed and be passed directly into functions 
+    being called within the script. Defaults are set for all arguments. This means 
+    the script can be run without any user-specified command-line arguments.
+
+    Returns:
+        argparse.ArgumentParser:
+            Configured parser instance used to define and retrieve CLI arguments.
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument("--bm25-pkl",
                         type=str,
@@ -30,7 +39,7 @@ def parse_args():
                         help="Number of documents each retriever fetches per query.")
     return parser.parse_args()
 
-def main():
+if __name__ == "__main__":
     args = parse_args()
 
     test_queries = pd.read_csv("results/queries.csv")
@@ -68,6 +77,3 @@ def main():
 
     master_retrieval = pd.DataFrame(master_retrieval)
     master_retrieval.to_csv('results/query_results_milestone1.csv')
-
-if __name__ == "__main__":
-    main()

@@ -1,15 +1,8 @@
-# import faiss
 import os
 os.environ["OMP_NUM_THREADS"] = "1"
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
-
-
-# from langchain_community.vectorstores import FAISS
-# from langchain_community.embeddings import HuggingFaceEmbeddings
-# import pandas as pd
-# from langchain_core.documents import Document
 import argparse
-from utils import build_prompt, build_context, build_hybrid_retriever, build_llm_model, run_chain, hybrid_run_queries
+from utils import build_hybrid_retriever, build_llm_model, run_chain, hybrid_run_queries
 from prompts import SYSTEM_PROMPT_1, SYSTEM_PROMPT_2, SYSTEM_PROMPT_3
 from dotenv import load_dotenv, find_dotenv
 
@@ -21,7 +14,16 @@ if not groq_api_key:
 
 
 def parse_args():
-    '''To accept arguments directly via bash/terminal commands'''
+    """
+    Serves as a centralized entry point for defining and managing the command-line 
+    arguments. These arguments will be parsed and be passed directly into functions 
+    being called within the script. Defaults are set for all arguments. This means 
+    the script can be run without any user-specified command-line arguments.
+
+    Returns:
+        argparse.ArgumentParser:
+            Configured parser instance used to define and retrieve CLI arguments.
+    """
     parser = argparse.ArgumentParser(description="Hybrid BM25 + Semantic RAG pipeline for Amazon product search.")
     parser.add_argument("--faiss-folder",
                         type=str,
@@ -44,6 +46,10 @@ def parse_args():
                         type=str,
                         default="qwen/qwen3-32b",
                         help="The Groq model for llm step.")
+    parser.add_argument("--llm-model-2",
+                        type=str,
+                        default="openai/gpt-oss-120b",
+                        help="The Groq model for llm comparison.")
     parser.add_argument("--k",
                         type=int,
                         default=5,
@@ -62,8 +68,7 @@ def parse_args():
                         help="Path to write the results CSV.")
     return parser.parse_args()
 
-def main():
-    """main script function of parsing args, build the retriever, run all queries, and saving results.    """
+if __name__ == "__main__":
     args = parse_args()
 
     hybrid_retriever = build_hybrid_retriever(
@@ -76,28 +81,25 @@ def main():
     
     if args.query: #if there's a single query provided
         
+        using_model = args.llm_model
         llm = build_llm_model(local_call = False,
-                                api_model = args.llm_model)
+                                api_model = using_model)
         response = run_chain(
             query=args.query,
             # system_prompt=args.system_prompt, #custom prompt
             retriever=hybrid_retriever,
             llm_model=llm)
         
-        print(f"Model: {args.llm_model}... Query: {args.query}, \n Response returned: {response}")
+        print(f"Model: {using_model}... Query: {args.query}, \n Response returned: {response}")
     else:
         results_df = hybrid_run_queries(
             test_queries_path=args.queries_csv,
-            retriever=hybrid_retriever,
-            # system_prompt=args.system_prompt #custom prompt
-            )
+            hybrid_retriever=hybrid_retriever,
+            system_prompt= SYSTEM_PROMPT_2, #custom prompt,
+            model_1 = args.llm_model, 
+            model_2 = args.llm_model_2)
 
         results_df.to_csv(args.output_csv, index=False)
         print(f"Results saved to {args.output_csv}")
 
         response = results_df
-
-    return response
-
-if __name__ == "__main__":
-    main()

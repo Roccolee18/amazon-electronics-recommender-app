@@ -1,19 +1,18 @@
-"""
-Usage:
-    python 3_export_subsets.py
-    python 3_export_subsets.py \
-        --meta-raw data/raw/meta_raw.parquet \
-        --reviews-raw data/raw/k_reviews_raw.parquet \
-        --merged data/processed/merged.parquet \
-        --out-dir data/processed \
-        --sample-size 10000
-"""
 import argparse
 from pathlib import Path
 import duckdb
 
 def parse_args():
-    '''To accept arguments directly via bash/terminal commands'''
+    """
+    Serves as a centralized entry point for defining and managing the command-line 
+    arguments. These arguments will be parsed and be passed directly into functions 
+    being called within the script. Defaults are set for all arguments. This means 
+    the script can be run without any user-specified command-line arguments.
+
+    Returns:
+        argparse.ArgumentParser:
+            Configured parser instance used to define and retrieve CLI arguments.
+    """
     p = argparse.ArgumentParser(description="Export row-limited subsets of Parquet files for faster iteration.")
     p.add_argument("--meta-raw",
                    default="data/raw/meta_raw.parquet",
@@ -35,11 +34,7 @@ def parse_args():
                    help="Row limit for subsets")
     return p.parse_args()
 
-def main():
-    ''' Main script function loop to export only a subset of files. 
-    Will be added to repo for those who have limited compute resources 
-    and/or want to iterate through the rest of the workflow. '''
-
+if __name__ == "__main__":
     args = parse_args()
     raw_out = Path(args.raw_out_dir)
     merge_out = Path(args.merged_out_dir)
@@ -85,6 +80,3 @@ def main():
 
     con.close()
     print("[STATUS] All subsets exported. DuckDB connection closed.")
-
-if __name__ == "__main__":
-    main()

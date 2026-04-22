@@ -1,11 +1,22 @@
-from utils import load_documents, split_documents, print_top_results
-from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_community.vectorstores import FAISS
+
 import argparse
 import os
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_community.vectorstores import FAISS
+from utils import load_documents, split_documents, print_top_results, build_vect_retriever
+
 
 def parse_args():
-    '''To accept arguments directly via bash/terminal commands'''
+    """
+    Serves as a centralized entry point for defining and managing the command-line 
+    arguments. These arguments will be parsed and be passed directly into functions 
+    being called within the script. Defaults are set for all arguments. This means 
+    the script can be run without any user-specified command-line arguments.
+
+    Returns:
+        argparse.ArgumentParser:
+            Configured parser instance used to define and retrieve CLI arguments.
+    """
     parser = argparse.ArgumentParser(description='Semantic search for Amazon products')
     parser.add_argument("--input",
                         default="data/processed/product_documents.parquet",
@@ -21,7 +32,8 @@ def parse_args():
                         default=True, 
                         help='Tell the function whether indexes already exist')
     parser.add_argument('--query', 
-                        type=str, 
+                        type=str,
+                        default=None, 
                         help='Search query')
     parser.add_argument('--k', 
                         type=int, 
@@ -29,15 +41,12 @@ def parse_args():
                         help='Number of results to return')
     return parser.parse_args()
 
-def main():
-    '''Main function to build a LangChain Semantic retriever from a parquet file of product documents
-    and optionally tests it with a query.'''
+if __name__ == "__main__":
     args = parse_args()
     index_path = os.path.join(args.output_dir, "semantic_index")
     embeddings = HuggingFaceEmbeddings(model_name=args.embeddings_model)
 
     if not args.prevent_rewrite or not os.path.isdir(index_path):
-        
         
         print("[STATUS] Loading and chunking/splitting docs")
         docs = load_documents(args.input)
@@ -60,7 +69,5 @@ def main():
             top_k_results = vectorstore.similarity_search(args.query, k=args.k)
 
             print(f"[RESULTS] Top {args.k} for query below:")
-            print_top_results(top_k_results)
-
-if __name__ == "__main__":
-    main()
+            for rank, result in enumerate(top_k_results, start=1):
+                print(f"Rank {rank}: {result.metadata.get('product_title')}")

@@ -1,9 +1,18 @@
 import argparse
 from pathlib import Path
-from utils import * 
+from utils import file_name_source_map, download_request
 
 def parse_args():
-    '''To accept arguments directly via bash/terminal commands'''
+    """
+    Serves as a centralized entry point for defining and managing the command-line 
+    arguments. These arguments will be parsed and be passed directly into functions 
+    being called within the script. Defaults are set for all arguments. This means 
+    the script can be run without any user-specified command-line arguments.
+
+    Returns:
+        argparse.ArgumentParser:
+            Configured parser instance used to define and retrieve CLI arguments.
+    """
     p = argparse.ArgumentParser()
     p.add_argument("--base_url",  
                    default="https://mcauleylab.ucsd.edu/public_datasets/data/amazon_2023/raw", 

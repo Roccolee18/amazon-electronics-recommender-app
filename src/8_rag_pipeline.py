@@ -1,15 +1,3 @@
-# import faiss
-# from langchain_community.vectorstores import FAISS
-# from langchain_community.embeddings import HuggingFaceEmbeddings
-# import pandas as pd
-# import pyarrow.parquet as pq
-# from langchain_core.documents import Document
-# from langchain_core.prompts import ChatPromptTemplate
-# from langchain_core.runnables import RunnablePassthrough
-# from langchain_core.output_parsers import StrOutputParser
-# from transformers import pipeline
-# from langchain_huggingface import HuggingFacePipeline, ChatHuggingFace
-# from langchain_core.runnables import RunnablePassthrough, RunnableLambda
 import argparse
 import os
 from utils import build_llm_model, build_vect_retriever, run_chain
@@ -17,7 +5,16 @@ from dotenv import load_dotenv, find_dotenv
 
 
 def parse_args():
-    '''To accept arguments directly via bash/terminal commands'''
+    """
+    Serves as a centralized entry point for defining and managing the command-line 
+    arguments. These arguments will be parsed and be passed directly into functions 
+    being called within the script. Defaults are set for all arguments. This means 
+    the script can be run without any user-specified command-line arguments.
+
+    Returns:
+        argparse.ArgumentParser:
+            Configured parser instance used to define and retrieve CLI arguments.
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument("--faiss-folder",
                         type=str,
@@ -41,8 +38,7 @@ def parse_args():
                         help="Single query test string.")
     return parser.parse_args()
 
-def main():
-    """main script function of parsing args, build the retriever, and run test query."""
+if __name__ == "__main__":
     args = parse_args()
 
     semantic_retriever = build_vect_retriever(faiss_folder = args.faiss_folder,
@@ -50,9 +46,7 @@ def main():
                                               k=args.k)
 
     if args.local_model:
-
         llm = build_llm_model(local_call = True, local_model = "Qwen/Qwen2.5-1.5B",  max_tokens = 256)
-        
         response = run_chain(args.query,
                 retriever= semantic_retriever,
                 llm_model = llm,
@@ -76,6 +70,3 @@ def main():
                 # system_prompt= custom_prompt,
                 )
         print(response)
-
-if __name__ == "__main__":
-    main()

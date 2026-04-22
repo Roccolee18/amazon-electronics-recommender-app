@@ -1,21 +1,19 @@
-"""
-Usage:
-    python 1_convert_parquet.py \
-        --reviews data/raw/Electronics.jsonl.gz \
-        --meta data/raw/meta_Electronics.jsonl.gz \
-        --out-dir data/raw
-
-    References:
-    ilyamusabirov/525eda_duckdb.md: https://gist.github.com/ilyamusabirov/9491e5ce6ae2fc63d6222609cebd0588
-"""
-
 import argparse
 from pathlib import Path
 import duckdb
 
 
 def parse_args():
-    '''To accept arguments directly via bash/terminal commands'''
+    """
+    Serves as a centralized entry point for defining and managing the command-line 
+    arguments. These arguments will be parsed and be passed directly into functions 
+    being called within the script. Defaults are set for all arguments. This means 
+    the script can be run without any user-specified command-line arguments.
+
+    Returns:
+        argparse.ArgumentParser:
+            Configured parser instance used to define and retrieve CLI arguments.
+    """
     p = argparse.ArgumentParser(description="Convert raw JSONL.GZ files to Parquet.")
     p.add_argument("--reviews-data",
                    default="data/raw/Electronics.jsonl.gz",
@@ -31,9 +29,7 @@ def parse_args():
                    help="Max number of top reviews (by helpful_vote) to aggregate per product")
     return p.parse_args()
 
-
-def main():
-    ''' Main script function loop to convert files to parquet. '''
+if __name__ == "__main__":
     args = parse_args()
     out = Path(args.out_dir)
     out.mkdir(parents=True, exist_ok=True)
@@ -85,7 +81,3 @@ def main():
     print("[STATUS] Conversion complete. DuckDB connection closed.")
     print(f"[SAVED] Raw meta as parquet")
     print(f"[SAVED] Raw reviews as parquet")
-
-
-if __name__ == "__main__":
-    main()
