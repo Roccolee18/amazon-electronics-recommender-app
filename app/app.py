@@ -2,30 +2,55 @@ import faiss
 import os
 os.environ["OMP_NUM_THREADS"] = "1"
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
-
 from shiny import App, ui, reactive, render
 import numpy as np
 from sentence_transformers import SentenceTransformer
 import pyarrow.parquet as pq
-from app_utils import *
 import pickle
 from transformers import pipeline
 from langchain_huggingface import HuggingFacePipeline
 from transformers import AutoTokenizer
+from langchain_community.vectorstores import FAISS 
+
+
+from app_utils import *
+from utils_2 import bm25_search, build_vect_retriever
 tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen2.5-0.5B-Instruct")
 
+
+############## GLOBAL VARS ##############
+# DOCS_PATH = "data/processed/product_documents.parquet"
+RETRIEVER_FOLDER = "data/retrievers/"
+BM25_FILE_PATH = os.path.join(RETRIEVER_FOLDER, "bm25_index.pkl")
+SEM_INDEX_PATH = os.path.join(RETRIEVER_FOLDER, "semantic_index")
+EMBEDDINGS_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
+
+BM_WEIGHT = 0.4
+SEMANTIC_WEIGHT = 0.6
+K = 5
+############################
 # Load data & models
-table = pq.read_table("./data/processed/product_documents.parquet")
-docs = table.to_pandas()
+# table = pq.read_table("./data/processed/product_documents.parquet")
+# docs = table.to_pandas()
+# index = faiss.read_index("./data/processed/semantic_search_index.faiss")
 
-model = SentenceTransformer("all-MiniLM-L6-v2")
-index = faiss.read_index("./data/processed/semantic_search_index.faiss")
+# Semantic loading
+embeddings = HuggingFaceEmbeddings(model_name=EMBEDDINGS_MODEL)
+vectorstore = FAISS.load_local(SEM_INDEX_PATH, embeddings, allow_dangerous_deserialization=True)
+semantic_retriever = build_vect_retriever(faiss_folder = SEM_INDEX_PATH, model= EMBEDDINGS_MODEL, k=K)
 
-with open("./data/processed/bm25_index.pkl", "rb") as f:
-    bm25_data = pickle.load(f)
+#bm25 loading
+with open(BM25_FILE_PATH, "rb") as f:
+    bm25_retriever = pickle.load(f)
 
-bm25 = bm25_data["bm25"]
-doc_names = bm25_data["doc_names"]
+#hybrid loading
+hybrid_retriever = build_hybrid_retriever(
+                    faiss_folder=SEM_INDEX_PATH,
+                    bm25_pkl_path=BM25_FILE_PATH,
+                    embedding_model=EMBEDDINGS_MODEL,
+                    bm25_weight=BM_WEIGHT,
+                    semantic_weight=SEMANTIC_WEIGHT,
+                    k=K)
 
 generator = pipeline(
     "text-generation",
@@ -202,7 +227,7 @@ def server(input, output, session):
 
         mode = input.search_mode()
         if mode == "semantic":
-            hits = semantic_search(docs, model, index, query, k=5)
+            hits = vectorstore.similarity_search(query, k=5)
             label = "Semantic"
         else:
             hits = bm25_search(docs, bm25, query, k=5)
