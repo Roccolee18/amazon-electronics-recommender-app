@@ -1,40 +1,39 @@
-############################## IMPORTS ##############################
-# Core Imports  =========================
-
-import pickle  # used in: build_hybrid_retriever
-from pathlib import Path  # used in: download_request
-import requests  # used in: download_request
-import pandas as pd  # used in: load_documents, hybrid_run_queries
-from tqdm import tqdm  # used in: download_request
-
-
-# import nltk  # used in: STOP_WORDS initialization
-# from nltk.corpus import stopwords  # used in: STOP_WORDS initialization
-# nltk.download("stopwords", quiet=True)
-# STOP_WORDS = set(stopwords.words("english"))
-
-# LangChain core objects  =========================
-
-from langchain_core.documents import Document  # used in: load_documents, build_context
-from langchain_core.prompts import ChatPromptTemplate  # used in: run_chain
-from langchain_core.runnables import RunnablePassthrough, RunnableLambda  # used in: run_chain
-from langchain_core.output_parsers import StrOutputParser  # used in: run_chain
-
-# LangChain retrieval / vector stores =========================
-
 import faiss
-from langchain_text_splitters import RecursiveCharacterTextSplitter  # used in: split_documents
-from langchain_community.vectorstores import FAISS  # used in: build_vect_retriever
-from langchain_community.embeddings import HuggingFaceEmbeddings  # used in: build_vect_retriever
-from langchain_community.retrievers import BM25Retriever  # used in: build_bm25_retriever
-from langchain_classic.retrievers import EnsembleRetriever  # used in: build_hybrid_retriever
+import requests
+from tqdm import tqdm
+from pathlib import Path
+import string
+import nltk
+from nltk.corpus import stopwords
+from langchain_core.documents import Document
+from langchain_community.vectorstores import FAISS
+import pandas as pd
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-# LLM integrations =========================
+from langchain_groq import ChatGroq
+import pandas as pd
+from langchain_core.documents import Document
+from langchain_community.retrievers import BM25Retriever
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_classic.retrievers import EnsembleRetriever
+from langchain_community.embeddings import HuggingFaceEmbeddings
 
-from langchain_groq import ChatGroq  # used in: build_llm_model
 
-from langchain_huggingface import HuggingFacePipeline  # used in: build_llm_model
-from transformers import pipeline  # used in: build_llm_model
+from langchain_huggingface import HuggingFacePipeline
+from transformers import pipeline
+
+
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables import RunnablePassthrough, RunnableLambda
+from langchain_core.output_parsers import StrOutputParser
+from langchain_groq import ChatGroq
+
+import pickle
+
+
+
+nltk.download("stopwords", quiet=True)
+STOP_WORDS = set(stopwords.words("english"))
 
 ############################## For convert_parquet.py and create_documents.py script ##############################
 
