@@ -461,5 +461,3 @@ def run_chain(
         | StrOutputParser()
     )
     return rag_chain.invoke(query)
-
-
