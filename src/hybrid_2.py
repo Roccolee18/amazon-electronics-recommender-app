@@ -11,6 +11,13 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 import argparse
 from utils import build_prompt, build_context, build_hybrid_retriever, build_llm_model, run_hybrid_chain, run_queries
 from prompts import SYSTEM_PROMPT_1, SYSTEM_PROMPT_2, SYSTEM_PROMPT_3
+from dotenv import load_dotenv, find_dotenv
+
+load_dotenv(find_dotenv())
+groq_api_key = os.getenv("GROQ_API_KEY")
+
+if not groq_api_key:
+    raise ValueError("Missing GROQ_API_KEY in .env file")
 
 
 def parse_args():
@@ -74,7 +81,7 @@ def main():
                                   api_model = args.llm_model)
             response = run_hybrid_chain(
                 query=args.query,
-                system_prompt=args.system_prompt,
+                # system_prompt=args.system_prompt, #custom prompt
                 hybrid_retriever=hybrid_retriever,
                 llm_model=llm)
             
@@ -83,7 +90,8 @@ def main():
         results_df = run_queries(
             test_queries_path=args.queries_csv,
             hybrid_retriever=hybrid_retriever,
-            system_prompt=args.system_prompt)
+            # system_prompt=args.system_prompt #custom prompt
+            )
 
         results_df.to_csv(args.output_csv, index=False)
         print(f"Results saved to {args.output_csv}")
