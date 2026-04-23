@@ -1,0 +1,82 @@
+/* ── Minimal Light ── Clean whites, slate accents, lots of breathing room */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400&display=swap');
+
+:root {
+    --bg: #f8f9fb;
+    --surface: #ffffff;
+    --surface2: #f1f3f7;
+    --border: #e2e6ed;
+    --accent: #2563eb;
+    --accent2: #0891b2;
+    --text: #111827;
+    --muted: #9ca3af;
+    --radius: 8px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; }
+.app-wrap { max-width: 860px; margin: 0 auto; padding: 48px 24px; }
+.app-header { margin-bottom: 32px; border-bottom: 1px solid var(--border); padding-bottom: 24px; }
+.app-title { font-family: 'Inter', sans-serif; font-weight: 600; font-size: 1.75rem; letter-spacing: -0.5px; color: var(--text); }
+.app-title span { color: var(--accent); }
+.app-sub { color: var(--muted); font-size: 0.82rem; margin-top: 6px; font-weight: 400; }
+
+.nav-tabs { border-bottom: 1px solid var(--border); margin-bottom: 28px; }
+.nav-tabs .nav-link {
+    font-family: 'Inter', sans-serif; font-weight: 500; font-size: 0.85rem;
+    color: var(--muted); background: none; border: none;
+    padding: 10px 20px; border-radius: 0; transition: color 0.15s;
+}
+.nav-tabs .nav-link:hover { color: var(--text); }
+.nav-tabs .nav-link.active {
+    color: var(--accent) !important; background: none !important;
+    border-bottom: 2px solid var(--accent) !important;
+}
+.tab-content { padding-top: 8px; }
+
+.search-wrap { display: flex; gap: 8px; margin-bottom: 32px; margin-top: 20px; }
+.search-wrap input[type=text] {
+    flex: 1; background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); color: var(--text); font-family: 'Inter', sans-serif;
+    font-size: 0.92rem; padding: 12px 16px; outline: none;
+    transition: border-color 0.15s; box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+.search-wrap input[type=text]:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,0.08); }
+.search-wrap input[type=text]::placeholder { color: var(--muted); }
+.search-btn {
+    background: var(--accent); border: none; border-radius: var(--radius);
+    color: #fff; font-family: 'Inter', sans-serif; font-weight: 500;
+    font-size: 0.88rem; padding: 12px 24px; cursor: pointer; transition: background 0.15s;
+}
+.search-btn:hover { background: #1d4ed8; }
+
+.selectize-input {
+    background: var(--surface) !important; border: 1px solid var(--border) !important;
+    color: var(--text) !important; font-family: 'Inter', sans-serif !important;
+    border-radius: var(--radius) !important; margin-bottom: 20px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
+}
+.selectize-dropdown {
+    background: var(--surface) !important; border: 1px solid var(--border) !important;
+    color: var(--text) !important; box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
+}
+.selectize-dropdown .option:hover { background: var(--surface2) !important; }
+
+.results-label { font-family: 'Inter', sans-serif; font-size: 0.72rem; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+.result-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 22px; margin-bottom: 10px; transition: box-shadow 0.15s, border-color 0.15s; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+.result-card:hover { border-color: var(--accent); box-shadow: 0 4px 12px rgba(37,99,235,0.08); }
+.card-header-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.rank-badge { font-family: 'Inter', sans-serif; font-weight: 600; font-size: 0.75rem; color: var(--accent); }
+.rating-badge { font-family: 'Inter', sans-serif; font-weight: 500; font-size: 0.75rem; color: var(--accent2); margin-left: auto; }
+.product-title { font-family: 'Inter', sans-serif; font-size: 0.97rem; font-weight: 500; color: var(--text); line-height: 1.4; }
+
+.rag-answer-label { font-family: 'Inter', sans-serif; font-size: 0.72rem; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent2); margin-bottom: 10px; }
+.rag-answer {
+    background: var(--surface); border: 1px solid var(--border);
+    border-left: 3px solid var(--accent2);
+    border-radius: var(--radius); padding: 20px 22px;
+    font-size: 0.92rem; line-height: 1.75; color: var(--text);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+.empty-state { text-align: center; padding: 60px 0; color: var(--muted); font-size: 0.85rem; }
+.empty-state .icon { font-size: 2rem; margin-bottom: 12px; }
